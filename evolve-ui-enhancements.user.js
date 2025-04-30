@@ -39,6 +39,13 @@
 // @resource R_Mythril ./icons/mythril.webp
 // @resource R_Iridium ./icons/iridium.webp
 // @resource R_Helium_3 ./icons/helium.webp
+// @resource R_Deuterium ./icons/deuterium.webp
+// @resource R_Adamantite ./icons/adamantite.webp
+// @resource R_Infernite ./icons/infernite.webp
+// @resource R_Graphene ./icons/graphene.webp
+// @resource R_Soul_Gem ./icons/soulgem.webp
+// @resource R_Stanene ./icons/stanene.webp
+// @resource R_Aerogel ./icons/aerogel.webp
 // @resource R_Neutronium ./icons/neutronium.webp
 // @resource R_Alloy ./icons/alloy.webp
 // @resource R_Genes ./icons/genes.webp
@@ -344,6 +351,78 @@ const RESOURCES = [
             storage: "#stack-Helium_3",
         },
     },
+    {
+        name: "Deuterium",
+        img: "R_Deuterium",
+        id: {
+            data_attr: "data-deuterium",
+            resources: "#resDeuterium",
+            market: null,
+            storage: null,
+        },
+    },
+    {
+        name: "Adamantite",
+        img: "R_Adamantite",
+        id: {
+            data_attr: "data-adamantite",
+            resources: "#resAdamantite",
+            market: null,
+            storage: "#stack-Adamantite",
+        },
+    },
+    {
+        name: "Infernite",
+        img: "R_Infernite",
+        id: {
+            data_attr: "data-infernite",
+            resources: "#resInfernite",
+            market: null,
+            storage: null,
+        },
+    },
+    {
+        name: "Graphene",
+        img: "R_Graphene",
+        id: {
+            data_attr: "data-graphene",
+            resources: "#resGraphene",
+            market: null,
+            storage: "#stack-Graphene",
+        },
+    },
+    {
+        name: "Stanene",
+        img: "R_Stanene",
+        id: {
+            data_attr: "data-stanene",
+            resources: "#resStanene",
+            market: null,
+            storage: "#stack-Stanene",
+        },
+    },
+    {
+        name: "Aerogel",
+        img: "R_Aerogel",
+        id: {
+            data_attr: "data-aerogel",
+            resources: "#resAerogel",
+            market: null,
+            storage: null,
+        },
+    },
+    {
+        name: "Soul Gem",
+        img: "R_Soul_Gem",
+        id: {
+            data_attr: "data-soul_gem",
+            resources: "#resSoul_Gem",
+            market: null,
+            storage: null,
+        },
+    },
+
+    //resSoul_Gem
     {
         name: "Alloy",
         img: "R_Alloy",
