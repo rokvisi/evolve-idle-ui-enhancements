@@ -1,551 +1,35 @@
-// ==UserScript==
-// @name        Evolve UI Enhancements
-// @namespace   EvolveIdle
-// @match       https://pmotschmann.github.io/Evolve/
-// @grant       none
-// @version     1.0
-// @author      -
-// @description 11/03/2025, 16:42:55
-// @grant    GM.getResourceUrl
-// @require https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js
-// @require https://cdn.jsdelivr.net/npm/@violentmonkey/dom@2
-// @run-at      document-idle
-//
-// @resource R_Money ./icons/money.webp
-// @resource R_Lumber ./icons/lumber.webp
-// @resource R_Ent ./icons/entity.webp
-// @resource R_Knowledge ./icons/knowledge.webp
-// @resource R_Crate ./icons/crate.webp
-// @resource R_Container ./icons/container.webp
-// @resource R_Food ./icons/wheat.webp
-// @resource R_Amber ./icons/amber.webp
-// @resource R_Stone ./icons/stone.webp
-// @resource R_Furs ./icons/furs.webp
-// @resource R_Copper ./icons/copper.webp
-// @resource R_Iron ./icons/iron.webp
-// @resource R_Aluminium ./icons/aluminium.webp
-// @resource R_Cement ./icons/cement.webp
-// @resource R_Coal ./icons/coal.webp
-// @resource R_Oil ./icons/oil.webp
-// @resource R_Steel ./icons/steel.webp
-// @resource R_Titanium ./icons/titanium.webp
-// @resource R_Brick ./icons/brick.webp
-// @resource R_Plywood ./icons/plywood.webp
-// @resource R_Wrought_Iron ./icons/wroughtiron.webp
-// @resource R_Nano_Tube ./icons/nanotube.webp
-// @resource R_Sheet_Metal ./icons/sheetmetal.webp
-// @resource R_Polymer ./icons/polymer.webp
-// @resource R_Uranium ./icons/uranium.webp
-// @resource R_Mythril ./icons/mythril.webp
-// @resource R_Iridium ./icons/iridium.webp
-// @resource R_Helium_3 ./icons/helium.webp
-// @resource R_Deuterium ./icons/deuterium.webp
-// @resource R_Adamantite ./icons/adamantite.webp
-// @resource R_Infernite ./icons/infernite.webp
-// @resource R_Graphene ./icons/graphene.webp
-// @resource R_Soul_Gem ./icons/soulgem.webp
-// @resource R_Stanene ./icons/stanene.webp
-// @resource R_Aerogel ./icons/aerogel.webp
-// @resource R_Neutronium ./icons/neutronium.webp
-// @resource R_Alloy ./icons/alloy.webp
-// @resource R_Genes ./icons/genes.webp
-// @resource R_Plasmid ./icons/plasmid.webp
-// @resource R_Phage ./icons/phage.webp
-// @resource R_Elerium ./icons/elerium.webp
-// @resource R_Damp_Cloth ./icons/dampcloth.webp
-//
-// ==/UserScript==
+import { RESOURCES } from "./resources.js";
+import { observe as VMObserve } from "@violentmonkey/dom";
+import "@violentmonkey/types";
 
 const GLOBAL_TABLE_ITEM_BG_COLOR_ALT =
     $("#resources > .alt").css("background-color");
 const GLOBAL_TABLE_ITEM_BG_COLOR = $("html").css("background-color");
 const GLOBAL_HIGHLIGHT_COLOR = "#ffffff33";
 
-const SPECIES = [
-    "Antid",
-    "Arraak",
-    "Balorg",
-    "Behodler",
-    "Bombardier",
-    "Cacti",
-    "Capybara",
-    "Cath",
-    "Centaur",
-    "Cyclops",
-    "Djinn",
-    "Dracnid",
-    "Dryad",
-    "Dwarf",
-    "Elf",
-    "Entish", // Ent
-    "Gecko",
-    "Ghast",
-    "Gnome",
-    "Goblin",
-    "Human",
-    "Imp",
-    "Kamel",
-    "Kobold",
-    "Lichen",
-    "Mantis",
-    "Moldling",
-    "Nano",
-    "Narwhalus",
-    "Nephilim",
-    "Octigoran",
-    "Ogre",
-    "Orc",
-    "Phoenix",
-    "Pinguicula",
-    "Pterodacti",
-    "Racconar",
-    "Rhinotaur",
-    "Salamander",
-    "Satyr",
-    "Scorpid",
-    "Seraph",
-    "Sharkin",
-    "Shoggoth",
-    "Shroomi",
-    "Slitheryn",
-    "Sludge",
-    "Sporgar",
-    "Synth",
-    "Tortoisan",
-    "Troll",
-    "Tuskin",
-    "Ultra Sludge",
-    "Unicorn",
-    "Junker", // Valdi
-    "Vulpine",
-    "Wendigo",
-    "Wolven",
-    "Wyvern",
-    "Yeti",
-];
-
-const RESOURCES = [
-    ...SPECIES.map((s) => ({
-        name: s,
-        img: "R_Ent",
-        id: {
-            resources: `#res${s.toLowerCase()}`,
-            market: null,
-            storage: null,
-        },
-    })),
-    {
-        name: "Money",
-        img: "R_Money",
-        id: {
-            data_attr: "data-money",
-            resources: "#resMoney",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Knowledge",
-        img: "R_Knowledge",
-        id: {
-            data_attr: "data-knowledge",
-            resources: "#resKnowledge",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Crate",
-        img: "R_Crate",
-        id: {
-            resources: "#resCrates",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Container",
-        img: "R_Container",
-        id: {
-            resources: "#resContainers",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Food",
-        img: "R_Food",
-        id: {
-            resources: "#resFood",
-            market: "#market-Food",
-            storage: "#stack-Food",
-        },
-    },
-    {
-        name: "Lumber",
-        img: "R_Lumber",
-        id: {
-            data_attr: "data-lumber",
-            resources: "#resLumber",
-            market: "#market-Lumber",
-            storage: "#stack-Lumber",
-        },
-    },
-    {
-        name: "Stone",
-        img: "R_Stone",
-        id: {
-            data_attr: "data-stone",
-            resources: "#resStone",
-            market: "#market-Stone",
-            storage: "#stack-Stone",
-        },
-    },
-    {
-        name: "Furs",
-        img: "R_Furs",
-        id: {
-            data_attr: "data-furs",
-            resources: "#resFurs",
-            market: "#market-Furs",
-            storage: "#stack-Furs",
-        },
-    },
-    {
-        name: "Copper",
-        img: "R_Copper",
-        id: {
-            data_attr: "data-copper",
-            resources: "#resCopper",
-            market: "#market-Copper",
-            storage: "#stack-Copper",
-        },
-    },
-    {
-        name: "Iron",
-        img: "R_Iron",
-        id: {
-            data_attr: "data-iron",
-            resources: "#resIron",
-            market: "#market-Iron",
-            storage: "#stack-Iron",
-        },
-    },
-    {
-        name: "Aluminium",
-        img: "R_Aluminium",
-        id: {
-            data_attr: "data-aluminium",
-            resources: "#resAluminium",
-            market: "#market-Aluminium",
-            storage: "#stack-Aluminium",
-        },
-    },
-    {
-        name: "Cement",
-        img: "R_Cement",
-        id: {
-            data_attr: "data-cement",
-            resources: "#resCement",
-            market: "#market-Cement",
-            storage: "#stack-Cement",
-        },
-    },
-    {
-        name: "Coal",
-        img: "R_Coal",
-        id: {
-            data_attr: "data-coal",
-            resources: "#resCoal",
-            market: "#market-Coal",
-            storage: "#stack-Coal",
-        },
-    },
-    {
-        name: "Oil",
-        img: "R_Oil",
-        id: {
-            data_attr: "data-oil",
-            resources: "#resOil",
-            market: "#market-Oil",
-            storage: "#stack-Oil",
-        },
-    },
-    {
-        name: "Steel",
-        img: "R_Steel",
-        id: {
-            data_attr: "data-steel",
-            resources: "#resSteel",
-            market: "#market-Steel",
-            storage: "#stack-Steel",
-        },
-    },
-    {
-        name: "Titanium",
-        img: "R_Titanium",
-        id: {
-            data_attr: "data-titanium",
-            resources: "#resTitanium",
-            market: "#market-Titanium",
-            storage: "#stack-Titanium",
-        },
-    },
-    {
-        name: "Uranium",
-        img: "R_Uranium",
-        id: {
-            data_attr: "data-uranium",
-            resources: "#resUranium",
-            market: "#market-Uranium",
-            storage: "#stack-Uranium",
-        },
-    },
-    {
-        name: "Mythril",
-        img: "R_Mythril",
-        id: {
-            data_attr: "data-mythril",
-            resources: "#resMythril",
-            market: "#market-Mythril",
-            storage: "#stack-Mythril",
-        },
-    },
-    {
-        name: "Iridium",
-        img: "R_Iridium",
-        id: {
-            data_attr: "data-iridium",
-            resources: "#resIridium",
-            market: "#market-Iridium",
-            storage: "#stack-Iridium",
-        },
-    },
-    {
-        name: "Neutronium",
-        img: "R_Neutronium",
-        id: {
-            data_attr: "data-neutronium",
-            resources: "#resNeutronium",
-            market: "#market-Neutronium",
-            storage: "#stack-Neutronium",
-        },
-    },
-    {
-        name: "Elerium",
-        img: "R_Elerium",
-        id: {
-            data_attr: "data-elerium",
-            resources: "#resElerium",
-            market: "#market-Elerium",
-            storage: "#stack-Elerium",
-        },
-    },
-    {
-        name: "Helium_3",
-        img: "R_Helium_3",
-        id: {
-            data_attr: "data-helium_3",
-            resources: "#resHelium_3",
-            market: "#market-Helium_3",
-            storage: "#stack-Helium_3",
-        },
-    },
-    {
-        name: "Deuterium",
-        img: "R_Deuterium",
-        id: {
-            data_attr: "data-deuterium",
-            resources: "#resDeuterium",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Adamantite",
-        img: "R_Adamantite",
-        id: {
-            data_attr: "data-adamantite",
-            resources: "#resAdamantite",
-            market: null,
-            storage: "#stack-Adamantite",
-        },
-    },
-    {
-        name: "Infernite",
-        img: "R_Infernite",
-        id: {
-            data_attr: "data-infernite",
-            resources: "#resInfernite",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Graphene",
-        img: "R_Graphene",
-        id: {
-            data_attr: "data-graphene",
-            resources: "#resGraphene",
-            market: null,
-            storage: "#stack-Graphene",
-        },
-    },
-    {
-        name: "Stanene",
-        img: "R_Stanene",
-        id: {
-            data_attr: "data-stanene",
-            resources: "#resStanene",
-            market: null,
-            storage: "#stack-Stanene",
-        },
-    },
-    {
-        name: "Aerogel",
-        img: "R_Aerogel",
-        id: {
-            data_attr: "data-aerogel",
-            resources: "#resAerogel",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Soul Gem",
-        img: "R_Soul_Gem",
-        id: {
-            data_attr: "data-soul_gem",
-            resources: "#resSoul_Gem",
-            market: null,
-            storage: null,
-        },
-    },
-
-    //resSoul_Gem
-    {
-        name: "Alloy",
-        img: "R_Alloy",
-        id: {
-            data_attr: "data-alloy",
-            resources: "#resAlloy",
-            market: "#market-Alloy",
-            storage: "#stack-Alloy",
-        },
-    },
-    {
-        name: "Polymer",
-        img: "R_Polymer",
-        id: {
-            data_attr: "data-polymer",
-
-            resources: "#resPolymer",
-            market: "#market-Polymer",
-            storage: "#stack-Polymer",
-        },
-    },
-    {
-        name: "Genes",
-        img: "R_Genes",
-        id: {
-            resources: "#resGenes",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Plasmid",
-        img: "R_Plasmid",
-        id: {
-            resources: "#resPlasmid",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Phage",
-        img: "R_Phage",
-        id: {
-            resources: "#resPhage",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Brick",
-        img: "R_Brick",
-        id: {
-            data_attr: "data-brick",
-            resources: "#resBrick",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Plywood",
-        img: "R_Plywood",
-        id: {
-            data_attr: "data-plywood",
-            resources: "#resPlywood",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Wrought Iron",
-        img: "R_Wrought_Iron",
-        id: {
-            data_attr: "data-wrought_iron",
-            resources: "#resWrought_Iron",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Damp Cloth",
-        img: "R_Damp_Cloth",
-        id: {
-            data_attr: "data-damp_cloth",
-            resources: "#resHorseshoe",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Nano Tube",
-        img: "R_Nano_Tube",
-        id: {
-            data_attr: "data-nano_tube",
-            resources: "#resNano_Tube",
-            market: null,
-            storage: null,
-        },
-    },
-    {
-        name: "Sheet Metal",
-        img: "R_Sheet_Metal",
-        id: {
-            data_attr: "data-sheet_metal",
-            resources: "#resSheet_Metal",
-            market: null,
-            storage: null,
-        },
-    },
-];
-
-function find_resource_by_resource_id(id) {
+function find_resource_by_name(name: string) {
+    return RESOURCES.find((resource) => {
+        return resource.name === name;
+    });
+}
+function find_resource_by_resource_id(id: string) {
     return RESOURCES.find((resource) => {
         return resource.id.resources === id;
     });
 }
-function find_resource_by_market_id(id) {
+function find_resource_by_market_id(id: string) {
     return RESOURCES.find((resource) => {
         return resource.id.market === id;
     });
 }
-function find_resource_by_storage_id(id) {
+function find_resource_by_storage_id(id: string) {
     return RESOURCES.find((resource) => {
         return resource.id.storage === id;
+    });
+}
+function find_resource_by_eject_id(id: string) {
+    return RESOURCES.find((resource) => {
+        return resource.id.eject === id;
     });
 }
 
@@ -570,12 +54,12 @@ function get_sub_tab_li_els() {
     return sub_tab_li_els;
 }
 
-function highlight_item(element) {
+function highlight_item(element: JQuery<HTMLElement>) {
     element.css({
         "background-color": GLOBAL_HIGHLIGHT_COLOR,
     });
 }
-function remove_highlight_from_item(element) {
+function remove_highlight_from_item(element: JQuery<HTMLElement>) {
     if (element.hasClass("alt")) {
         element.css({
             "background-color": GLOBAL_TABLE_ITEM_BG_COLOR_ALT,
@@ -586,7 +70,7 @@ function remove_highlight_from_item(element) {
         });
     }
 }
-function add_hover_highlight(element) {
+function add_hover_highlight(element: JQuery<HTMLElement>) {
     element.hover(
         function () {
             highlight_item($(this));
@@ -598,7 +82,7 @@ function add_hover_highlight(element) {
 }
 
 const IMAGE_CACHE = new Map();
-async function add_img(element, image_id) {
+async function add_img(element: JQuery<HTMLElement>, image_id: string) {
     element.css({
         display: "flex",
         "align-items": "center",
@@ -646,10 +130,13 @@ async function add_img(element, image_id) {
     // element.prepend(img_el);
 }
 
-async function add_resource_img(resource_el, image_id) {
+async function add_resource_img(
+    resource_el: JQuery<HTMLElement>,
+    image_id: string
+) {
     // Most resource <div>s have an <h3> child element.
     // This <h3> element contains the name of the resource.
-    let text_parent_el = $(resource_el).find("h3");
+    let text_parent_el: JQuery<HTMLElement> = $(resource_el).find("h3");
 
     // Some elements don't have an <h3> element, they have a <span> instead.
     if (text_parent_el.length === 0) {
@@ -677,8 +164,8 @@ async function add_resource_img(resource_el, image_id) {
 }
 
 class State {
-    #selected_main_tab = null;
-    #selected_sub_tab = null;
+    #selected_main_tab: string | null = null;
+    #selected_sub_tab: string | null = null;
     #sub_tabs_with_on_click_handlers = [];
 
     // Each specific resource handler can override this function.
@@ -687,7 +174,7 @@ class State {
         /* no-op */
     };
 
-    set_tab_specific_cleanup_function(func) {
+    set_tab_specific_cleanup_function(func: () => void) {
         this.#tab_specific_cleanup_function = func;
     }
 
@@ -735,7 +222,7 @@ class State {
         }
 
         // Get the selected sub-tab.
-        let selected_sub_tab_el = null;
+        let selected_sub_tab_el: JQuery<HTMLElement> | null = null;
         subtabs.each(function () {
             if ($(this).attr("aria-selected") === "true") {
                 selected_sub_tab_el = $(this);
@@ -747,6 +234,10 @@ class State {
             return;
         }
 
+        //? Typescript doesn't know that selected_sub_tab_el is a JQuery<HTMLElement>.
+        //? This is a workaround to make it work.
+        selected_sub_tab_el = selected_sub_tab_el as JQuery<HTMLElement>;
+
         // The name can be directly inside the <a> element, or inside a nested <span>.
         // If the nested <span> is present, it is the real name of the sub-tab.
         const nested_span_el = selected_sub_tab_el.find("span")[0];
@@ -755,7 +246,7 @@ class State {
             selected_sub_tab = nested_span_el.innerText;
         } else {
             // Use the <a> element directly as the name of the sub-tab.
-            selected_sub_tab = selected_sub_tab_el[0].innerText;
+            selected_sub_tab = selected_sub_tab_el[0]?.innerText;
         }
 
         return { main_tab: selected_main_tab, sub_tab: selected_sub_tab };
@@ -768,15 +259,15 @@ class State {
         const selected_tabs = this.get_selected_tabs();
 
         if (
-            this.#selected_main_tab === selected_tabs.main_tab &&
-            this.#selected_sub_tab === selected_tabs.sub_tab
+            this.#selected_main_tab === selected_tabs?.main_tab &&
+            this.#selected_sub_tab === selected_tabs?.sub_tab
         ) {
             // Tabs have not changed.
             return false;
         }
 
-        this.#selected_main_tab = selected_tabs.main_tab;
-        this.#selected_sub_tab = selected_tabs.sub_tab;
+        this.#selected_main_tab = selected_tabs?.main_tab ?? null;
+        this.#selected_sub_tab = selected_tabs?.sub_tab ?? null;
 
         // Tabs have changed.
         return true;
@@ -835,6 +326,9 @@ class State {
             if (sub_tab === "Storage") {
                 this.on_event_resources_storage();
             }
+            if (sub_tab === "Mass Ejector") {
+                this.on_event_resources_mass_ejector();
+            }
         }
     }
 
@@ -877,29 +371,6 @@ class State {
             add_hover_highlight($(this));
         });
 
-        // Highlight the matching market resource from the main resource.
-        $("#resources > div").each(function () {
-            const resource_id = `#${$(this).attr("id")}`;
-
-            // TODO: Investigate this to see why so many invalid resources exist.
-            const resource = find_resource_by_resource_id(resource_id);
-            if (!resource) return;
-
-            // Get the same resource in the resources->market.
-            const market_item = $(resource.id.market);
-
-            function mouseenter() {
-                highlight_item(market_item);
-            }
-            function mouseleave() {
-                remove_highlight_from_item(market_item);
-            }
-
-            $(this).on("mouseenter", mouseenter);
-            $(this).on("mouseleave", mouseleave);
-            hover_callbacks.push({ el: $(this), mouseenter, mouseleave });
-        });
-
         // Highlight the matching main resource from the market resource.
         market_items.each(function () {
             const market_id = `#${$(this).attr("id")}`;
@@ -922,6 +393,8 @@ class State {
             $(this).on("mouseleave", mouseleave);
             hover_callbacks.push({ el: $(this), mouseenter, mouseleave });
         });
+
+        // ------------------ Quanitity Buttons ------------------ //
 
         // Add quantity select buttons.
         const quantity_buttons_parent = $("<div/>")
@@ -952,6 +425,71 @@ class State {
         }
 
         quantity_buttons_parent.appendTo("#market-qty");
+
+        // ------------------ Galactic Trade ------------------ //
+
+        const galaxy_trade_items = $(
+            "#mTabResource > div > section > #market > #galaxyTrade > .market-item"
+        ).filter(function () {
+            // Skip hidden elements.
+            if ($(this).css("display") === "none") return false;
+
+            // Skip the trade header.
+            if ($(this).hasClass("trade-header")) return false;
+
+            // Skip the last element.
+            if ($(this).text().startsWith("Galactic Routes")) return false;
+
+            return true;
+        });
+
+        // Add hover highlight to each galactic trade item in the market sub-tab.
+        galaxy_trade_items.each(function () {
+            add_hover_highlight($(this));
+        });
+
+        galaxy_trade_items.each(function () {
+            // Get the offer items
+            const offer_items = $(this).find(".offer-item");
+
+            offer_items.each(async function () {
+                const offer_item_name = $(this)
+                    .text()
+                    .trim()
+                    .replaceAll(/-/g, "_")
+                    .replaceAll(/ /g, "_");
+
+                // Find the resource by name.
+                const resource = find_resource_by_name(offer_item_name);
+                if (!resource) return;
+
+                // Add image
+                await add_img($(this), resource.img);
+
+                // Add flex style to the item
+                $(this).css({
+                    display: "flex",
+                    "align-items": "center",
+                    "justify-content": "start",
+                    gap: "5px",
+                });
+
+                // Get the same resource in the main resource tab.
+                const main_resource_item = $(resource.id.resources);
+                function mouseenter() {
+                    highlight_item(main_resource_item);
+                }
+                function mouseleave() {
+                    remove_highlight_from_item(main_resource_item);
+                }
+
+                $(this).on("mouseenter", mouseenter);
+                $(this).on("mouseleave", mouseleave);
+                hover_callbacks.push({ el: $(this), mouseenter, mouseleave });
+            });
+        });
+
+        console.log("galaxy_trade_items", galaxy_trade_items);
 
         // Cleanup function.
         this.set_tab_specific_cleanup_function(() => {
@@ -1003,29 +541,6 @@ class State {
             add_hover_highlight($(this));
         });
 
-        // Highlight the matching storage resource from the main resource.
-        $("#resources > div").each(function () {
-            const resource_id = `#${$(this).attr("id")}`;
-
-            // TODO: Investigate this to see why so many invalid resources exist.
-            const resource = find_resource_by_resource_id(resource_id);
-            if (!resource) return;
-
-            // Get the same resource in the resources->storage.
-            const storage_item = $(resource.id.storage);
-
-            function mouseenter() {
-                highlight_item(storage_item);
-            }
-            function mouseleave() {
-                remove_highlight_from_item(storage_item);
-            }
-
-            $(this).on("mouseenter", mouseenter);
-            $(this).on("mouseleave", mouseleave);
-            hover_callbacks.push({ el: $(this), mouseenter, mouseleave });
-        });
-
         // Highlight the matching main resource from the storage resource.
         storage_items.each(function () {
             const storage_id = `#${$(this).attr("id")}`;
@@ -1058,9 +573,79 @@ class State {
             });
         });
     }
+    on_event_resources_mass_ejector() {
+        const hover_callbacks = [];
+
+        // Get the array of ejection items.
+        const ejector_items = $(
+            "#mTabResource > div > section > #resEjector > .market-item"
+        ).filter(function () {
+            // Skip hidden elements.
+            if ($(this).css("display") === "none") return false;
+
+            // Skip the eject header.
+            if ($(this).attr("id") === "eject") return false;
+
+            return true;
+        });
+
+        // Add resource images to ejection sub-tab.
+        ejector_items.each(async function () {
+            // Get the ejector item id.
+            const eject_id = `#${$(this).attr("id")}`;
+
+            // Find the corresponding resource by eject id.
+            const resource = find_resource_by_eject_id(eject_id);
+            if (!resource) return;
+
+            // Add the image to the item
+            await add_resource_img($(this), resource.img);
+        });
+
+        // Add hover highlight to resources in the ejector sub-tab.
+        ejector_items.each(function () {
+            add_hover_highlight($(this));
+        });
+
+        // Highlight the matching main resource from the ejector resource.
+        ejector_items.each(function () {
+            const ejector_id = `#${$(this).attr("id")}`;
+            console.log("ejector_id", ejector_id);
+
+            // TODO: See if this is necessary.
+            const resource = find_resource_by_eject_id(ejector_id);
+            if (!resource) return;
+
+            // Get the same resource in the main resource tab.
+            const main_resource_item = $(resource.id.resources);
+
+            function mouseenter() {
+                highlight_item(main_resource_item);
+            }
+            function mouseleave() {
+                remove_highlight_from_item(main_resource_item);
+            }
+
+            $(this).on("mouseenter", mouseenter);
+            $(this).on("mouseleave", mouseleave);
+            hover_callbacks.push({ el: $(this), mouseenter, mouseleave });
+        });
+
+        // Cleanup function.
+        this.set_tab_specific_cleanup_function(() => {
+            // Remove the main resources tab hover handlers.
+            hover_callbacks.forEach(({ el, mouseenter, mouseleave }) => {
+                el.off("mouseenter", mouseenter);
+                el.off("mouseleave", mouseleave);
+            });
+        });
+    }
 }
 
-function watch_element_dom_mutation(selector, on_open) {
+function watch_element_dom_mutation(
+    selector: string,
+    on_open: (element: JQuery<HTMLElement>) => () => void
+) {
     let is_open = false;
     let cleanup_fn = () => {
         console.log("default cleanup");
@@ -1095,91 +680,6 @@ function watch_element_dom_mutation(selector, on_open) {
     };
 }
 
-function watch_element_interval(
-    selector,
-    on_open,
-    on_close,
-    check_interval = 1
-) {
-    let is_open = false;
-
-    const interval = setInterval(() => {
-        const element = $(selector);
-        const element_exists = element.length !== 0;
-
-        if (element_exists) {
-            // Element exists and was previously closed.
-            if (is_open === false) {
-                is_open = true;
-                on_open(element);
-            }
-        } else {
-            // Element doesn't exists and was previously open.
-            if (is_open === true) {
-                is_open = false;
-                on_close();
-            }
-        }
-    }, check_interval);
-
-    return () => {
-        clearInterval(interval);
-    };
-}
-
-// Same as watch_element, but also fires when the contents of the element get changed.
-function watch_element_change(selector, on_open, on_close, check_interval = 1) {
-    // const observer = new MutationObserver((mutations) => {
-    //     on_open(element);
-    // });
-
-    const extended_on_open = (element) => {
-        on_open(element);
-
-        const observer = new MutationObserver((mutations) => {
-            console.log("element changed");
-        });
-
-        console.log("connected observer to element:", element[0]);
-        // If you get "parameter 1 is not of type 'Node'" error, see https://stackoverflow.com/a/77855838/492336
-        observer.observe(element[0], {
-            childList: true,
-            subtree: true,
-        });
-    };
-
-    const stop_watching = watch_element(
-        selector,
-        extended_on_open,
-        on_close,
-        check_interval
-    );
-
-    // const observer = new MutationObserver((mutations) => {
-    //     console.log("element changed");
-    // });
-
-    // const get_element = () => {
-    //     if (selector.startsWith("#")) {
-    //         return document.getElementById(selector.slice(1));
-    //     }
-    //     if (selector.startsWith(".")) {
-    //         return document.getElementsByClassName(selector.slice(1))[0];
-    //     }
-    // };
-
-    // // If you get "parameter 1 is not of type 'Node'" error, see https://stackoverflow.com/a/77855838/492336
-    // observer.observe(document.getElementById("#popper"), {
-    //     childList: true,
-    //     subtree: true,
-    // });
-
-    return () => {
-        stop_watching();
-        // observer.disconnect();
-    };
-}
-
 // Entry point.
 async function main() {
     // ------------- UNIVERSAL ------------ //
@@ -1192,7 +692,7 @@ async function main() {
     // Change stone to amber for specific species.
     const AMBER_SPECIES = ["Ent", "Pinguicula"];
     if (AMBER_SPECIES.includes(species)) {
-        RESOURCES.find((r) => r.name === "Stone").img = "R_Amber";
+        RESOURCES.find((r) => r.name === "Stone")!.img = "R_Amber";
     }
 
     // Add resource images to the main resource tab.
@@ -1203,12 +703,10 @@ async function main() {
     }
 
     // Add hover highlights to the main resource tab.
+
     $("#resources > div").each(function () {
         add_hover_highlight($(this));
     });
-
-    // Remove the footer promo.
-    // $(".promoBar").remove();
 
     // Watch for the 'popper' element to appear.
     const stop = watch_element_dom_mutation("#popper", (element) => {
@@ -1293,7 +791,7 @@ async function main() {
 }
 
 // Wait for the game UI to load, then run the main function.
-VM.observe(document.body, () => {
+VMObserve(document.body, () => {
     const node = document.querySelector("div#main");
     if (node !== null) {
         main();
