@@ -7,6 +7,4 @@
 // @author      -
 // @description 11/03/2025, 16:42:55
 // @grant       GM.getResourceUrl
-// @require     https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js
-// @require     https://cdn.jsdelivr.net/npm/@violentmonkey/dom@2
 // @run-at      document-idle

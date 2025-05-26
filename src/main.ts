@@ -1,11 +1,10 @@
-import { RESOURCES } from "./resources.js";
-import { observe as VMObserve } from "@violentmonkey/dom";
-import "@violentmonkey/types";
+import { RESOURCES } from './resources.js';
+import { observe as VMObserve } from '@violentmonkey/dom';
+import '@violentmonkey/types';
 
-const GLOBAL_TABLE_ITEM_BG_COLOR_ALT =
-    $("#resources > .alt").css("background-color");
-const GLOBAL_TABLE_ITEM_BG_COLOR = $("html").css("background-color");
-const GLOBAL_HIGHLIGHT_COLOR = "#ffffff33";
+const GLOBAL_TABLE_ITEM_BG_COLOR_ALT = $('#resources > .alt').css('background-color');
+const GLOBAL_TABLE_ITEM_BG_COLOR = $('html').css('background-color');
+const GLOBAL_HIGHLIGHT_COLOR = '#ffffff33';
 
 function find_resource_by_name(name: string) {
     return RESOURCES.find((resource) => {
@@ -34,16 +33,12 @@ function find_resource_by_eject_id(id: string) {
 }
 
 function get_sub_tab_li_els() {
-    let sub_tab_li_els = $(
-        "#mainTabs > section > div[tabIndex='0'] > div > div > nav > ul > li"
-    );
+    let sub_tab_li_els = $("#mainTabs > section > div[tabIndex='0'] > div > div > nav > ul > li");
     if (sub_tab_li_els.length === 0) {
         // A sub-tab may not exist.
 
         // The exception is the A.R.P.A tab, which has a different structure.
-        sub_tab_li_els = $(
-            "#mainTabs > section > div[tabIndex='0'] > div > div > div > nav > ul > li"
-        );
+        sub_tab_li_els = $("#mainTabs > section > div[tabIndex='0'] > div > div > div > nav > ul > li");
 
         // If the A.R.P.A structure doesn't match anything, the sub-tab is not found.
         if (sub_tab_li_els.length === 0) {
@@ -56,17 +51,17 @@ function get_sub_tab_li_els() {
 
 function highlight_item(element: JQuery<HTMLElement>) {
     element.css({
-        "background-color": GLOBAL_HIGHLIGHT_COLOR,
+        'background-color': GLOBAL_HIGHLIGHT_COLOR,
     });
 }
 function remove_highlight_from_item(element: JQuery<HTMLElement>) {
-    if (element.hasClass("alt")) {
+    if (element.hasClass('alt')) {
         element.css({
-            "background-color": GLOBAL_TABLE_ITEM_BG_COLOR_ALT,
+            'background-color': GLOBAL_TABLE_ITEM_BG_COLOR_ALT,
         });
     } else {
         element.css({
-            "background-color": GLOBAL_TABLE_ITEM_BG_COLOR,
+            'background-color': GLOBAL_TABLE_ITEM_BG_COLOR,
         });
     }
 }
@@ -84,19 +79,19 @@ function add_hover_highlight(element: JQuery<HTMLElement>) {
 const IMAGE_CACHE = new Map();
 async function add_img(element: JQuery<HTMLElement>, image_id: string) {
     element.css({
-        display: "flex",
-        "align-items": "center",
-        "justify-content": "center",
-        gap: "5px",
+        display: 'flex',
+        'align-items': 'center',
+        'justify-content': 'center',
+        gap: '5px',
     });
 
     // const text_color = element.css("color");
 
     const cached_img = IMAGE_CACHE.get(image_id);
     if (!cached_img) {
-        const img_el = $("<img />", {
+        const img_el = $('<img />', {
             src: await GM.getResourceUrl(image_id),
-            alt: "logo",
+            alt: 'logo',
             style: `width: 14px; height: 14px; border-radius: 4px; `, // border: 1px solid ${text_color};
         });
 
@@ -130,32 +125,29 @@ async function add_img(element: JQuery<HTMLElement>, image_id: string) {
     // element.prepend(img_el);
 }
 
-async function add_resource_img(
-    resource_el: JQuery<HTMLElement>,
-    image_id: string
-) {
+async function add_resource_img(resource_el: JQuery<HTMLElement>, image_id: string) {
     // Most resource <div>s have an <h3> child element.
     // This <h3> element contains the name of the resource.
-    let text_parent_el: JQuery<HTMLElement> = $(resource_el).find("h3");
+    let text_parent_el: JQuery<HTMLElement> = $(resource_el).find('h3');
 
     // Some elements don't have an <h3> element, they have a <span> instead.
     if (text_parent_el.length === 0) {
-        text_parent_el = $(resource_el).find("span").first();
+        text_parent_el = $(resource_el).find('span').first();
     }
 
-    const text_color = text_parent_el.css("color");
+    const text_color = text_parent_el.css('color');
 
     // Make the header flex
     text_parent_el.css({
-        display: "flex",
-        "align-items": "center",
-        gap: "5px",
+        display: 'flex',
+        'align-items': 'center',
+        gap: '5px',
     });
 
     // Create the image element
-    const img_el = $("<img />", {
+    const img_el = $('<img />', {
         src: await GM.getResourceUrl(image_id),
-        alt: "logo",
+        alt: 'logo',
         style: `width: 18px; height: 18px; border: 1px solid ${text_color}; border-radius: 4px;`,
     });
 
@@ -196,9 +188,7 @@ class State {
         let selected_main_tab = null;
         let selected_sub_tab = null;
 
-        const main_tab_el = $(
-            "#mainTabs > nav > ul > li[aria-selected='true']"
-        )[0];
+        const main_tab_el = $("#mainTabs > nav > ul > li[aria-selected='true']")[0];
 
         // Theoretically, the main tab should always be found.
         if (!main_tab_el) {
@@ -224,7 +214,7 @@ class State {
         // Get the selected sub-tab.
         let selected_sub_tab_el: JQuery<HTMLElement> | null = null;
         subtabs.each(function () {
-            if ($(this).attr("aria-selected") === "true") {
+            if ($(this).attr('aria-selected') === 'true') {
                 selected_sub_tab_el = $(this);
             }
         });
@@ -240,7 +230,7 @@ class State {
 
         // The name can be directly inside the <a> element, or inside a nested <span>.
         // If the nested <span> is present, it is the real name of the sub-tab.
-        const nested_span_el = selected_sub_tab_el.find("span")[0];
+        const nested_span_el = selected_sub_tab_el.find('span')[0];
         if (nested_span_el) {
             // Use the nested <h2> as the name of the sub-tab.
             selected_sub_tab = nested_span_el.innerText;
@@ -258,10 +248,7 @@ class State {
     sync_selected_tabs() {
         const selected_tabs = this.get_selected_tabs();
 
-        if (
-            this.#selected_main_tab === selected_tabs?.main_tab &&
-            this.#selected_sub_tab === selected_tabs?.sub_tab
-        ) {
+        if (this.#selected_main_tab === selected_tabs?.main_tab && this.#selected_sub_tab === selected_tabs?.sub_tab) {
             // Tabs have not changed.
             return false;
         }
@@ -280,7 +267,7 @@ class State {
 
         // Since the tabs have changed, detach the previous sub-tab click handlers.
         this.#sub_tabs_with_on_click_handlers.forEach(function (element) {
-            element.off("click");
+            element.off('click');
         });
         this.#sub_tabs_with_on_click_handlers = [];
 
@@ -290,15 +277,14 @@ class State {
 
         // Alias instance methods to avoid "this" issues.
         const THIS__on_sub_tab_click = () => this.on_sub_tab_click();
-        const THIS__push_sub_tab_click_handler = (element) =>
-            this.#sub_tabs_with_on_click_handlers.push(element);
+        const THIS__push_sub_tab_click_handler = (element) => this.#sub_tabs_with_on_click_handlers.push(element);
 
         // Attach on-click handlers to the sub-tabs.
         // TODO: Also attaches to hidden tabs. Fix this.
         get_sub_tab_li_els().each(function () {
             THIS__push_sub_tab_click_handler($(this));
 
-            $(this).on("click", function () {
+            $(this).on('click', function () {
                 THIS__on_sub_tab_click();
             });
         });
@@ -319,14 +305,14 @@ class State {
         const sub_tab = this.#selected_sub_tab;
 
         // Resources tab
-        if (main_tab === "Resources") {
-            if (sub_tab === "Market") {
+        if (main_tab === 'Resources') {
+            if (sub_tab === 'Market') {
                 this.on_event_resources_market();
             }
-            if (sub_tab === "Storage") {
+            if (sub_tab === 'Storage') {
                 this.on_event_resources_storage();
             }
-            if (sub_tab === "Mass Ejector") {
+            if (sub_tab === 'Mass Ejector') {
                 this.on_event_resources_mass_ejector();
             }
         }
@@ -341,14 +327,12 @@ class State {
         const on_click_callbacks = [];
 
         // Get the array of market items.
-        const market_items = $(
-            "#mTabResource > div > section > #market > .market-item"
-        ).filter(function () {
+        const market_items = $('#mTabResource > div > section > #market > .market-item').filter(function () {
             // Skip hidden elements.
-            if ($(this).css("display") === "none") return false;
+            if ($(this).css('display') === 'none') return false;
 
             // Skip elements that are not resources.
-            if (!$(this).attr("id").startsWith("market-")) return false;
+            if (!$(this).attr('id').startsWith('market-')) return false;
 
             return true;
         });
@@ -356,7 +340,7 @@ class State {
         // Add resource images to market sub-tab.
         market_items.each(async function () {
             // Get the market item id.
-            const market_id = `#${$(this).attr("id")}`;
+            const market_id = `#${$(this).attr('id')}`;
 
             // Find the corresponding resource by market id.
             const resource = find_resource_by_market_id(market_id);
@@ -373,7 +357,7 @@ class State {
 
         // Highlight the matching main resource from the market resource.
         market_items.each(function () {
-            const market_id = `#${$(this).attr("id")}`;
+            const market_id = `#${$(this).attr('id')}`;
 
             // TODO: See if this is necessary.
             const resource = find_resource_by_market_id(market_id);
@@ -389,59 +373,59 @@ class State {
                 remove_highlight_from_item(main_resource_item);
             }
 
-            $(this).on("mouseenter", mouseenter);
-            $(this).on("mouseleave", mouseleave);
+            $(this).on('mouseenter', mouseenter);
+            $(this).on('mouseleave', mouseleave);
             hover_callbacks.push({ el: $(this), mouseenter, mouseleave });
         });
 
         // ------------------ Quanitity Buttons ------------------ //
 
         // Add quantity select buttons.
-        const quantity_buttons_parent = $("<div/>")
+        const quantity_buttons_parent = $('<div/>')
             .css({
-                display: "flex",
-                gap: "1rem",
-                "justify-content": "center",
+                display: 'flex',
+                gap: '1rem',
+                'justify-content': 'center',
             })
-            .addClass("market");
+            .addClass('market');
 
-        const num_formatter = new Intl.NumberFormat("en-US", {
-            notation: "compact",
+        const num_formatter = new Intl.NumberFormat('en-US', {
+            notation: 'compact',
         });
 
         for (const qty of [100, 200, 500, 1000, 5000, 10000, 100000, 1000000]) {
             const on_click = function () {
-                const el = $("#market-qty  .control > input").val(qty);
-                el[0].dispatchEvent(new Event("input"));
+                const el = $('#market-qty  .control > input').val(qty);
+                el[0].dispatchEvent(new Event('input'));
             };
 
-            const btn = $("<button/>")
+            const btn = $('<button/>')
                 .text(num_formatter.format(qty))
-                .addClass("button")
-                .on("click", on_click)
+                .addClass('button')
+                .on('click', on_click)
                 .appendTo(quantity_buttons_parent);
 
             on_click_callbacks.push({ el: btn, on_click });
         }
 
-        quantity_buttons_parent.appendTo("#market-qty");
+        quantity_buttons_parent.appendTo('#market-qty');
 
         // ------------------ Galactic Trade ------------------ //
 
-        const galaxy_trade_items = $(
-            "#mTabResource > div > section > #market > #galaxyTrade > .market-item"
-        ).filter(function () {
-            // Skip hidden elements.
-            if ($(this).css("display") === "none") return false;
+        const galaxy_trade_items = $('#mTabResource > div > section > #market > #galaxyTrade > .market-item').filter(
+            function () {
+                // Skip hidden elements.
+                if ($(this).css('display') === 'none') return false;
 
-            // Skip the trade header.
-            if ($(this).hasClass("trade-header")) return false;
+                // Skip the trade header.
+                if ($(this).hasClass('trade-header')) return false;
 
-            // Skip the last element.
-            if ($(this).text().startsWith("Galactic Routes")) return false;
+                // Skip the last element.
+                if ($(this).text().startsWith('Galactic Routes')) return false;
 
-            return true;
-        });
+                return true;
+            }
+        );
 
         // Add hover highlight to each galactic trade item in the market sub-tab.
         galaxy_trade_items.each(function () {
@@ -450,14 +434,10 @@ class State {
 
         galaxy_trade_items.each(function () {
             // Get the offer items
-            const offer_items = $(this).find(".offer-item");
+            const offer_items = $(this).find('.offer-item');
 
             offer_items.each(async function () {
-                const offer_item_name = $(this)
-                    .text()
-                    .trim()
-                    .replaceAll(/-/g, "_")
-                    .replaceAll(/ /g, "_");
+                const offer_item_name = $(this).text().trim().replaceAll(/-/g, '_').replaceAll(/ /g, '_');
 
                 // Find the resource by name.
                 const resource = find_resource_by_name(offer_item_name);
@@ -468,10 +448,10 @@ class State {
 
                 // Add flex style to the item
                 $(this).css({
-                    display: "flex",
-                    "align-items": "center",
-                    "justify-content": "start",
-                    gap: "5px",
+                    display: 'flex',
+                    'align-items': 'center',
+                    'justify-content': 'start',
+                    gap: '5px',
                 });
 
                 // Get the same resource in the main resource tab.
@@ -483,24 +463,24 @@ class State {
                     remove_highlight_from_item(main_resource_item);
                 }
 
-                $(this).on("mouseenter", mouseenter);
-                $(this).on("mouseleave", mouseleave);
+                $(this).on('mouseenter', mouseenter);
+                $(this).on('mouseleave', mouseleave);
                 hover_callbacks.push({ el: $(this), mouseenter, mouseleave });
             });
         });
 
-        console.log("galaxy_trade_items", galaxy_trade_items);
+        console.log('galaxy_trade_items', galaxy_trade_items);
 
         // Cleanup function.
         this.set_tab_specific_cleanup_function(() => {
             // Remove the main resources tab hover handlers.
             hover_callbacks.forEach(({ el, mouseenter, mouseleave }) => {
-                el.off("mouseenter", mouseenter);
-                el.off("mouseleave", mouseleave);
+                el.off('mouseenter', mouseenter);
+                el.off('mouseleave', mouseleave);
             });
 
             on_click_callbacks.forEach(({ el, on_click }) => {
-                el.off("click", on_click);
+                el.off('click', on_click);
             });
         });
     }
@@ -511,14 +491,12 @@ class State {
         const hover_callbacks = [];
 
         // Get the array of storage items.
-        const storage_items = $(
-            "#mTabResource > div > section > #resStorage > .market-item"
-        ).filter(function () {
+        const storage_items = $('#mTabResource > div > section > #resStorage > .market-item').filter(function () {
             // Skip hidden elements.
-            if ($(this).css("display") === "none") return false;
+            if ($(this).css('display') === 'none') return false;
 
             // Skip elements that are not resources.
-            if (!$(this).attr("id").startsWith("stack-")) return false;
+            if (!$(this).attr('id').startsWith('stack-')) return false;
 
             return true;
         });
@@ -526,7 +504,7 @@ class State {
         // Add resource images to storage sub-tab.
         storage_items.each(async function () {
             // Get the storage item id.
-            const storage_id = `#${$(this).attr("id")}`;
+            const storage_id = `#${$(this).attr('id')}`;
 
             // Find the corresponding resource by storage id.
             const resource = find_resource_by_storage_id(storage_id);
@@ -543,7 +521,7 @@ class State {
 
         // Highlight the matching main resource from the storage resource.
         storage_items.each(function () {
-            const storage_id = `#${$(this).attr("id")}`;
+            const storage_id = `#${$(this).attr('id')}`;
 
             // TODO: See if this is necessary.
             const resource = find_resource_by_storage_id(storage_id);
@@ -559,8 +537,8 @@ class State {
                 remove_highlight_from_item(main_resource_item);
             }
 
-            $(this).on("mouseenter", mouseenter);
-            $(this).on("mouseleave", mouseleave);
+            $(this).on('mouseenter', mouseenter);
+            $(this).on('mouseleave', mouseleave);
             hover_callbacks.push({ el: $(this), mouseenter, mouseleave });
         });
 
@@ -568,8 +546,8 @@ class State {
         this.set_tab_specific_cleanup_function(() => {
             // Remove the main resources tab hover handlers.
             hover_callbacks.forEach(({ el, mouseenter, mouseleave }) => {
-                el.off("mouseenter", mouseenter);
-                el.off("mouseleave", mouseleave);
+                el.off('mouseenter', mouseenter);
+                el.off('mouseleave', mouseleave);
             });
         });
     }
@@ -577,14 +555,12 @@ class State {
         const hover_callbacks = [];
 
         // Get the array of ejection items.
-        const ejector_items = $(
-            "#mTabResource > div > section > #resEjector > .market-item"
-        ).filter(function () {
+        const ejector_items = $('#mTabResource > div > section > #resEjector > .market-item').filter(function () {
             // Skip hidden elements.
-            if ($(this).css("display") === "none") return false;
+            if ($(this).css('display') === 'none') return false;
 
             // Skip the eject header.
-            if ($(this).attr("id") === "eject") return false;
+            if ($(this).attr('id') === 'eject') return false;
 
             return true;
         });
@@ -592,7 +568,7 @@ class State {
         // Add resource images to ejection sub-tab.
         ejector_items.each(async function () {
             // Get the ejector item id.
-            const eject_id = `#${$(this).attr("id")}`;
+            const eject_id = `#${$(this).attr('id')}`;
 
             // Find the corresponding resource by eject id.
             const resource = find_resource_by_eject_id(eject_id);
@@ -609,8 +585,8 @@ class State {
 
         // Highlight the matching main resource from the ejector resource.
         ejector_items.each(function () {
-            const ejector_id = `#${$(this).attr("id")}`;
-            console.log("ejector_id", ejector_id);
+            const ejector_id = `#${$(this).attr('id')}`;
+            console.log('ejector_id', ejector_id);
 
             // TODO: See if this is necessary.
             const resource = find_resource_by_eject_id(ejector_id);
@@ -626,8 +602,8 @@ class State {
                 remove_highlight_from_item(main_resource_item);
             }
 
-            $(this).on("mouseenter", mouseenter);
-            $(this).on("mouseleave", mouseleave);
+            $(this).on('mouseenter', mouseenter);
+            $(this).on('mouseleave', mouseleave);
             hover_callbacks.push({ el: $(this), mouseenter, mouseleave });
         });
 
@@ -635,20 +611,17 @@ class State {
         this.set_tab_specific_cleanup_function(() => {
             // Remove the main resources tab hover handlers.
             hover_callbacks.forEach(({ el, mouseenter, mouseleave }) => {
-                el.off("mouseenter", mouseenter);
-                el.off("mouseleave", mouseleave);
+                el.off('mouseenter', mouseenter);
+                el.off('mouseleave', mouseleave);
             });
         });
     }
 }
 
-function watch_element_dom_mutation(
-    selector: string,
-    on_open: (element: JQuery<HTMLElement>) => () => void
-) {
+function watch_element_dom_mutation(selector: string, on_open: (element: JQuery<HTMLElement>) => () => void) {
     let is_open = false;
     let cleanup_fn = () => {
-        console.log("default cleanup");
+        console.log('default cleanup');
     };
 
     const observer = new MutationObserver((mutations) => {
@@ -687,12 +660,12 @@ async function main() {
     const STATE = new State();
 
     // Get the current species.
-    const species = $("#race > .name").text();
+    const species = $('#race > .name').text();
 
     // Change stone to amber for specific species.
-    const AMBER_SPECIES = ["Ent", "Pinguicula"];
+    const AMBER_SPECIES = ['Ent', 'Pinguicula'];
     if (AMBER_SPECIES.includes(species)) {
-        RESOURCES.find((r) => r.name === "Stone")!.img = "R_Amber";
+        RESOURCES.find((r) => r.name === 'Stone')!.img = 'R_Amber';
     }
 
     // Add resource images to the main resource tab.
@@ -704,16 +677,16 @@ async function main() {
 
     // Add hover highlights to the main resource tab.
 
-    $("#resources > div").each(function () {
+    $('#resources > div').each(function () {
         add_hover_highlight($(this));
     });
 
     // Watch for the 'popper' element to appear.
-    const stop = watch_element_dom_mutation("#popper", (element) => {
+    const stop = watch_element_dom_mutation('#popper', (element) => {
         // Find the cost list <div> or return early.
         let cost_list_el = null;
         element.children().each(function () {
-            if ($(this).hasClass("costList")) {
+            if ($(this).hasClass('costList')) {
                 cost_list_el = $(this);
             }
         });
@@ -729,16 +702,13 @@ async function main() {
             // Find the resource data attribute.
             let resource_data_attribute = null;
             $.each(this.attributes, function () {
-                if (this.name.startsWith("data-")) {
+                if (this.name.startsWith('data-')) {
                     resource_data_attribute = this;
                 }
             });
 
             // Find the resource by the data attribute.
-            const resource = RESOURCES.find(
-                (resource) =>
-                    resource.id.data_attr === resource_data_attribute.name
-            );
+            const resource = RESOURCES.find((resource) => resource.id.data_attr === resource_data_attribute.name);
             if (!resource) return;
 
             // Highlight the main resource.
@@ -752,13 +722,13 @@ async function main() {
                 // locale or a string like 'en-US' to override it.
                 { minimumFractionDigits: 0 }
             );
-            main_resource_el.find("span.count").prepend(
-                $("<span>").text(cost).attr("id", "cost-annotation").css({
-                    color: "oklch(0.637 0.237 25.331)",
-                    "font-size": "0.6rem",
-                    "margin-right": "2px",
-                    "background-color": "black",
-                    height: "auto",
+            main_resource_el.find('span.count').prepend(
+                $('<span>').text(cost).attr('id', 'cost-annotation').css({
+                    color: 'oklch(0.637 0.237 25.331)',
+                    'font-size': '0.6rem',
+                    'margin-right': '2px',
+                    'background-color': 'black',
+                    height: 'auto',
                 })
             );
 
@@ -771,7 +741,7 @@ async function main() {
         return () => {
             mutated_main_resources.forEach((el) => {
                 remove_highlight_from_item(el);
-                el.find("#cost-annotation").remove();
+                el.find('#cost-annotation').remove();
             });
         };
     });
@@ -782,9 +752,9 @@ async function main() {
 
     // Attach on-click handlers to the main tabs.
     // TODO: Also attaches to hidden main tabs. Fix this.
-    const main_tabs = $("#mainTabs > nav > ul > li");
+    const main_tabs = $('#mainTabs > nav > ul > li');
     main_tabs.each(function () {
-        $(this).on("click", function () {
+        $(this).on('click', function () {
             STATE.on_main_tab_click();
         });
     });
@@ -792,7 +762,7 @@ async function main() {
 
 // Wait for the game UI to load, then run the main function.
 VMObserve(document.body, () => {
-    const node = document.querySelector("div#main");
+    const node = document.querySelector('div#main');
     if (node !== null) {
         main();
 
