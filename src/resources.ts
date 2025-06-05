@@ -124,3 +124,23 @@ const species_as_resources = SPECIES.map((species) => {
 });
 
 export const RESOURCES = [...resources, ...species_as_resources];
+
+
+export function find_resource_by_name(name: string) {
+    return RESOURCES.find((resource) => resource.name === name);
+}
+export function find_resource_by_data_attr(data_attr: string) {
+    return RESOURCES.find((resource) => resource.id.data_attr === data_attr);
+}
+export function find_resource_by_resource_id(id: string) {
+    return RESOURCES.find((resource) => resource.id.resources === id);
+}
+export function find_resource_by_market_id(id: string) {
+    return RESOURCES.find((resource) => resource.id.market === id);
+}
+export function find_resource_by_storage_id(id: string) {
+    return RESOURCES.find((resource) => resource.id.storage === id);
+}
+export function find_resource_by_eject_id(id: string) {
+    return RESOURCES.find((resource) => resource.id.eject === id);
+}

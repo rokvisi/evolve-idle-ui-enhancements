@@ -1,36 +1,12 @@
-import { RESOURCES } from './resources.js';
+import { find_resource_by_data_attr, RESOURCES } from './resources.js';
 import { observe as VMObserve } from '@violentmonkey/dom';
 import '@violentmonkey/types';
+import { find_resource_by_name, find_resource_by_eject_id, find_resource_by_market_id, find_resource_by_resource_id, find_resource_by_storage_id } from './resources.js';
+import { fmtNumber } from './numberFormatter.js';
 
 const GLOBAL_TABLE_ITEM_BG_COLOR_ALT = $('#resources > .alt').css('background-color');
 const GLOBAL_TABLE_ITEM_BG_COLOR = $('html').css('background-color');
 const GLOBAL_HIGHLIGHT_COLOR = '#ffffff33';
-
-function find_resource_by_name(name: string) {
-    return RESOURCES.find((resource) => {
-        return resource.name === name;
-    });
-}
-function find_resource_by_resource_id(id: string) {
-    return RESOURCES.find((resource) => {
-        return resource.id.resources === id;
-    });
-}
-function find_resource_by_market_id(id: string) {
-    return RESOURCES.find((resource) => {
-        return resource.id.market === id;
-    });
-}
-function find_resource_by_storage_id(id: string) {
-    return RESOURCES.find((resource) => {
-        return resource.id.storage === id;
-    });
-}
-function find_resource_by_eject_id(id: string) {
-    return RESOURCES.find((resource) => {
-        return resource.id.eject === id;
-    });
-}
 
 function get_sub_tab_li_els() {
     let sub_tab_li_els = $("#mainTabs > section > div[tabIndex='0'] > div > div > nav > ul > li");
@@ -76,8 +52,8 @@ function add_hover_highlight(element: JQuery<HTMLElement>) {
     );
 }
 
-const IMAGE_CACHE = new Map();
-async function add_img(element: JQuery<HTMLElement>, image_id: string) {
+const IMAGE_CACHE = new Map<string, JQuery<HTMLElement>>();
+async function add_img(element: JQuery<Element>, image_id: string) {
     element.css({
         display: 'flex',
         'align-items': 'center',
@@ -147,8 +123,8 @@ async function add_resource_img(resource_el: JQuery<HTMLElement>, image_id: stri
     // Create the image element
     const img_el = $('<img />', {
         src: await GM.getResourceUrl(image_id),
-        alt: 'logo',
-        style: `width: 18px; height: 18px; border: 1px solid ${text_color}; border-radius: 4px;`,
+        alt: '404',
+        style: `width: 18px; height: 18px; border: 1px solid ${text_color}; border-radius: 4px; font-size: 0.5rem; text-align: center; vertical-align: middle; line-height: 1rem;`,
     });
 
     // Prepend the image to the header
@@ -400,7 +376,7 @@ class State {
             };
 
             const btn = $('<button/>')
-                .text(num_formatter.format(qty))
+                .text(fmtNumber(qty))
                 .addClass('button')
                 .on('click', on_click)
                 .appendTo(quantity_buttons_parent);
@@ -684,32 +660,27 @@ async function main() {
     // Watch for the 'popper' element to appear.
     const stop = watch_element_dom_mutation('#popper', (element) => {
         // Find the cost list <div> or return early.
-        let cost_list_el = null;
-        element.children().each(function () {
-            if ($(this).hasClass('costList')) {
-                cost_list_el = $(this);
+        let cost_list_el: HTMLElement | undefined = undefined;
+        for (const child of element.children()) {
+            if (child.classList.contains('costList')) {
+                cost_list_el = child;
             }
-        });
-        if (!cost_list_el) {
-            return () => {};
         }
+        if (!cost_list_el) return () => {}
+
 
         // Iterate over the cost list items.
-        const mutated_main_resources = [];
-        cost_list_el.children().each(function () {
-            const cost_item_el = $(this);
+        const mutated_main_resources: JQuery<HTMLElement>[] = [];
+        for (const child of Array.from(cost_list_el.children)) {
+            const cost_item_el = $(child);
 
             // Find the resource data attribute.
-            let resource_data_attribute = null;
-            $.each(this.attributes, function () {
-                if (this.name.startsWith('data-')) {
-                    resource_data_attribute = this;
-                }
-            });
+            const resource_data_attribute = Array.from(child.attributes).find((attr) => attr.name.startsWith('data-'));
+            if (!resource_data_attribute) continue;
 
             // Find the resource by the data attribute.
-            const resource = RESOURCES.find((resource) => resource.id.data_attr === resource_data_attribute.name);
-            if (!resource) return;
+            const resource = find_resource_by_data_attr(resource_data_attribute.name);
+            if (!resource) continue;
 
             // Highlight the main resource.
             const main_resource_el = $(resource.id.resources);
@@ -717,17 +688,24 @@ async function main() {
 
             // Add cost annotation to the main resource.
 
-            const cost = Number(-resource_data_attribute.value).toLocaleString(
-                undefined, // leave undefined to use the visitor's browser
-                // locale or a string like 'en-US' to override it.
-                { minimumFractionDigits: 0 }
-            );
+            const num_formatter = new Intl.NumberFormat('en-US', {
+                notation: 'compact',
+            });
+
+            const cost = fmtNumber(-resource_data_attribute.value);
             main_resource_el.find('span.count').prepend(
                 $('<span>').text(cost).attr('id', 'cost-annotation').css({
-                    color: 'oklch(0.637 0.237 25.331)',
-                    'font-size': '0.6rem',
+                    display: 'inline-block',
+                    color: 'red',
+                    'background-color': 'oklch(20.5% 0 0)',
+                    // 'margin-top': "auto",
+                    // 'margin-bottom': 'auto',
+                    'padding': '0px 4px',
+                    'font-weight': 400,
+                    'border-radius': '4px',
+                    'font-family': "Lato, mono",
+                    'font-size': '0.8rem',
                     'margin-right': '2px',
-                    'background-color': 'black',
                     height: 'auto',
                 })
             );
@@ -736,7 +714,7 @@ async function main() {
 
             // Add the image to the cost item.
             add_img(cost_item_el, resource.img);
-        });
+        }
 
         return () => {
             mutated_main_resources.forEach((el) => {

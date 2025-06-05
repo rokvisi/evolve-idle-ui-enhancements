@@ -9,7 +9,7 @@
         "jquery": "^3.7.1"
     },
     "scripts": {
-        "build": "bun run build.ts",
+        "build": "bun build.ts",
         "serve": "http-server -c-1"
     },
     "devDependencies": {
