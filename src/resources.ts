@@ -17,10 +17,10 @@ const all_resources = [
     'Aerogel',
     'Alloy',
     'Aluminium',
-    'AntiPlasmid', //? Missing
+    'AntiPlasmid',
     'Artifact', //? Missing
     'Asphodel_Powder', //? Missing
-    'Authority', //? Missing
+    'Authority',
     'Blessed_Essence', //? Missing
     'Blood_Stone', //? Missing
     'Bolognium',
@@ -35,7 +35,7 @@ const all_resources = [
     'Corrupt_Gem',
     'Crates',
     'Crystal', //? Missing
-    'Dark', //? Missing
+    'Dark',
     'Demonic_Essence', //? Missing
     'Deuterium',
     'Elerium',
