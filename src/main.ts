@@ -631,6 +631,10 @@ function watch_element_dom_mutation(selector: string, on_open: (element: JQuery<
 
 // Entry point.
 async function main() {
+    // Delay the execution by 2 seconds to allow the game to fully load.
+    // TODO: Replace this with a robust way to check if the game is *FULLY* loaded.
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
     // ------------- UNIVERSAL ------------ //
     // Global state object.
     const STATE = new State();
@@ -659,6 +663,50 @@ async function main() {
 
     // Watch for the 'popper' element to appear.
     const stop = watch_element_dom_mutation('#popper', (element) => {
+        
+        // Hovering "Oil Powerplant" OR "Wind Farm"
+        // If the element is the wind farm, add a "surplus-power" annotation to the popper.
+        if (element.attr('data-id') === "city-oil_power") {
+            const oil_power_el = $('#city-oil_power');
+
+            const building_name = oil_power_el.find(".aTitle").first().text().trim();
+            const building_count_str = oil_power_el.find(".count").first().text().trim();
+            const building_count = parseInt(building_count_str);
+
+            if (building_name === "Wind Farm") {
+                // TODO: Make sure to update this if the constant power changes.
+                // TODO: Ideally parse from wiki or some other source (game data?)
+                const constant_power = 4;
+
+                let power_text_el = element.children().last();
+                // If the item is a popTimer (building unafordable right-now), we need to get the previous element.
+                if (power_text_el.attr('id') === "popTimer") {
+                    power_text_el = power_text_el.prev();
+                }
+
+                const outPowerStr = power_text_el.text().replaceAll('+', ' ').replaceAll('MW', '').trim();
+                const outPower = parseInt(outPowerStr);
+
+                if (outPower > constant_power) {
+                    // Add the surplus power annotation.
+                    const surplus_power = (outPower - constant_power) * building_count;
+                    const surplus_power_annotation = $('<p>')
+                        .text(`Total Power Surplus: ${surplus_power} MW`)
+                        .css({
+                            color: 'green',
+                            'background-color': 'oklch(20.5% 0 0)',
+                            padding: '2px 4px',
+                            'font-weight': 400,
+                            'border-radius': '4px',
+                            'font-family': "Lato, mono",
+                            'font-size': '0.8rem',
+                        });
+
+                    power_text_el.append(surplus_power_annotation);
+                }
+            }
+        }
+
         // Find the cost list <div> or return early.
         let cost_list_el: HTMLElement | undefined = undefined;
         for (const child of element.children()) {
@@ -687,11 +735,6 @@ async function main() {
             highlight_item(main_resource_el);
 
             // Add cost annotation to the main resource.
-
-            const num_formatter = new Intl.NumberFormat('en-US', {
-                notation: 'compact',
-            });
-
             const cost = fmtNumber(-resource_data_attribute.value);
             main_resource_el.find('span.count').prepend(
                 $('<span>').text(cost).attr('id', 'cost-annotation').css({
@@ -742,6 +785,8 @@ async function main() {
 VMObserve(document.body, () => {
     const node = document.querySelector('div#main');
     if (node !== null) {
+        
+
         main();
 
         // Disconnect observer
