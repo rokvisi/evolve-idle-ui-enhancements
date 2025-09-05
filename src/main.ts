@@ -1,12 +1,19 @@
 import { find_resource_by_data_attr, RESOURCES } from './resources.js';
 import { observe as VMObserve } from '@violentmonkey/dom';
 import '@violentmonkey/types';
-import { find_resource_by_name, find_resource_by_eject_id, find_resource_by_market_id, find_resource_by_resource_id, find_resource_by_storage_id } from './resources.js';
+import {
+    find_resource_by_name,
+    find_resource_by_eject_id,
+    find_resource_by_market_id,
+    find_resource_by_resource_id,
+    find_resource_by_storage_id,
+} from './resources.js';
 import { fmtNumber } from './numberFormatter.js';
+import { beep } from './utils.js';
 
-const GLOBAL_TABLE_ITEM_BG_COLOR_ALT = $('#resources > .alt').css('background-color');
-const GLOBAL_TABLE_ITEM_BG_COLOR = $('html').css('background-color');
-const GLOBAL_HIGHLIGHT_COLOR = '#ffffff33';
+let GLOBAL_TABLE_ITEM_BG_COLOR_ALT = $('#resources > .alt').css('background-color');
+let GLOBAL_TABLE_ITEM_BG_COLOR = $('html').css('background-color');
+let GLOBAL_HIGHLIGHT_COLOR = '#ffffff33';
 
 function get_sub_tab_li_els() {
     let sub_tab_li_els = $("#mainTabs > section > div[tabIndex='0'] > div > div > nav > ul > li");
@@ -35,21 +42,24 @@ function remove_highlight_from_item(element: JQuery<HTMLElement>) {
         element.css({
             'background-color': GLOBAL_TABLE_ITEM_BG_COLOR_ALT,
         });
+
+        console.log('remove alt highlight');
     } else {
         element.css({
             'background-color': GLOBAL_TABLE_ITEM_BG_COLOR,
         });
+
+        console.log('remove normal highlight', GLOBAL_TABLE_ITEM_BG_COLOR);
     }
 }
 function add_hover_highlight(element: JQuery<HTMLElement>) {
-    element.hover(
-        function () {
-            highlight_item($(this));
-        },
-        function () {
-            remove_highlight_from_item($(this));
-        }
-    );
+    element.on('mouseenter', function () {
+        highlight_item($(this));
+    });
+    element.on('mouseleave', function () {
+        remove_highlight_from_item($(this));
+        console.log('mouseleave');
+    });
 }
 
 const IMAGE_CACHE = new Map<string, JQuery<HTMLElement>>();
@@ -635,6 +645,10 @@ async function main() {
     // TODO: Replace this with a robust way to check if the game is *FULLY* loaded.
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
+    GLOBAL_TABLE_ITEM_BG_COLOR_ALT = $('#resources > .alt').css('background-color');
+    GLOBAL_TABLE_ITEM_BG_COLOR = $('html').css('background-color');
+    GLOBAL_HIGHLIGHT_COLOR = '#ffffff33';
+
     // ------------- UNIVERSAL ------------ //
     // Global state object.
     const STATE = new State();
@@ -663,24 +677,23 @@ async function main() {
 
     // Watch for the 'popper' element to appear.
     const stop = watch_element_dom_mutation('#popper', (element) => {
-        
         // Hovering "Oil Powerplant" OR "Wind Farm"
         // If the element is the wind farm, add a "surplus-power" annotation to the popper.
-        if (element.attr('data-id') === "city-oil_power") {
+        if (element.attr('data-id') === 'city-oil_power') {
             const oil_power_el = $('#city-oil_power');
 
-            const building_name = oil_power_el.find(".aTitle").first().text().trim();
-            const building_count_str = oil_power_el.find(".count").first().text().trim();
+            const building_name = oil_power_el.find('.aTitle').first().text().trim();
+            const building_count_str = oil_power_el.find('.count').first().text().trim();
             const building_count = parseInt(building_count_str);
 
-            if (building_name === "Wind Farm") {
+            if (building_name === 'Wind Farm') {
                 // TODO: Make sure to update this if the constant power changes.
                 // TODO: Ideally parse from wiki or some other source (game data?)
                 const constant_power = 4;
 
                 let power_text_el = element.children().last();
                 // If the item is a popTimer (building unafordable right-now), we need to get the previous element.
-                if (power_text_el.attr('id') === "popTimer") {
+                if (power_text_el.attr('id') === 'popTimer') {
                     power_text_el = power_text_el.prev();
                 }
 
@@ -690,17 +703,15 @@ async function main() {
                 if (outPower > constant_power) {
                     // Add the surplus power annotation.
                     const surplus_power = (outPower - constant_power) * building_count;
-                    const surplus_power_annotation = $('<p>')
-                        .text(`Total Power Surplus: ${surplus_power} MW`)
-                        .css({
-                            color: 'green',
-                            'background-color': 'oklch(20.5% 0 0)',
-                            padding: '2px 4px',
-                            'font-weight': 400,
-                            'border-radius': '4px',
-                            'font-family': "Lato, mono",
-                            'font-size': '0.8rem',
-                        });
+                    const surplus_power_annotation = $('<p>').text(`Total Power Surplus: ${surplus_power} MW`).css({
+                        color: 'green',
+                        'background-color': 'oklch(20.5% 0 0)',
+                        padding: '2px 4px',
+                        'font-weight': 400,
+                        'border-radius': '4px',
+                        'font-family': 'Lato, mono',
+                        'font-size': '0.8rem',
+                    });
 
                     power_text_el.append(surplus_power_annotation);
                 }
@@ -714,8 +725,7 @@ async function main() {
                 cost_list_el = child;
             }
         }
-        if (!cost_list_el) return () => {}
-
+        if (!cost_list_el) return () => {};
 
         // Iterate over the cost list items.
         const mutated_main_resources: JQuery<HTMLElement>[] = [];
@@ -743,10 +753,10 @@ async function main() {
                     'background-color': 'oklch(20.5% 0 0)',
                     // 'margin-top': "auto",
                     // 'margin-bottom': 'auto',
-                    'padding': '0px 4px',
+                    padding: '0px 4px',
                     'font-weight': 400,
                     'border-radius': '4px',
-                    'font-family': "Lato, mono",
+                    'font-family': 'Lato, mono',
                     'font-size': '0.8rem',
                     'margin-right': '2px',
                     height: 'auto',
@@ -779,14 +789,37 @@ async function main() {
             STATE.on_main_tab_click();
         });
     });
+
+    // Observe the message log for fortress messages.
+    const messageQueueLog = document.getElementById('msgQueueLog');
+    if (messageQueueLog) {
+        VMObserve(messageQueueLog, (mutationRecords) => {
+            const mutationRecord = mutationRecords[0];
+            if (!mutationRecord) return;
+
+            // Try to find the interesting messages in the log.
+            mutationRecord.addedNodes.forEach((addedNode) => {
+                const nodeText = addedNode.textContent?.trim()?.toLowerCase();
+                if (!nodeText) return;
+
+                console.log(nodeText);
+
+                // Check for fortress overrun messages.
+                if (nodeText.startsWith('your fortress was overrun')) {
+                    beep();
+                    alert('Fortress overrun!');
+                }
+            });
+        });
+    } else {
+        console.warn('Message log element not found. Skipping message log observation.');
+    }
 }
 
 // Wait for the game UI to load, then run the main function.
 VMObserve(document.body, () => {
     const node = document.querySelector('div#main');
     if (node !== null) {
-        
-
         main();
 
         // Disconnect observer
