@@ -125,7 +125,6 @@ const species_as_resources = SPECIES.map((species) => {
 
 export const RESOURCES = [...resources, ...species_as_resources];
 
-
 export function find_resource_by_name(name: string) {
     return RESOURCES.find((resource) => resource.name === name);
 }

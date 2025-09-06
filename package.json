@@ -17,6 +17,6 @@
         "@types/jquery": "^3.5.32",
         "@violentmonkey/types": "^0.2.2",
         "http-server": "^14.1.1",
-        "prettier": "^3.5.3"
+        "prettier": "^3.6.2"
     }
 }
