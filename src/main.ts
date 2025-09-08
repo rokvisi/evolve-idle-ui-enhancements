@@ -14,7 +14,10 @@ import { ImgFactory } from './ImgFactory.js';
 import { GLOBALS, init_globals } from './globals.js';
 import { tab_manager } from './TabManager.js';
 
-import webc from './web-components/hello.min.js' with { type: 'text' };
+import Test from './svelte/Test.svelte';
+
+// import webc from './web-components/hello.min.js' with { type: 'text' };
+import { mount } from 'svelte';
 
 function popper_handler(element: JQuery<HTMLElement>) {
     // Hovering "Oil Powerplant" OR "Wind Farm"
@@ -221,26 +224,35 @@ async function attach_debug_stuff() {
 
     document.addEventListener('keydown', async (event) => {
         if (event.key === 'z') {
-            const aa = document.getElementById('me')! as any;
-            toast = aa.toast;
-
-            const promise = new Promise((resolve, reject) =>
-                setTimeout(() => {
-                    if (Math.random() > 0.5) {
-                        resolve({ name: 'Svelte Sonner' });
-                    } else {
-                        reject();
-                    }
-                }, 1500)
-            );
-
-            toast.promise(promise, {
-                loading: 'Loading...',
-                success: (data: any) => {
-                    return data.name + ' toast has been added';
-                },
-                error: 'Error... :( Try again!',
-            });
+            // const aa = document.getElementById('me')! as any;
+            // toast = aa.toast;
+            // const promise = new Promise((resolve, reject) =>
+            //     setTimeout(() => {
+            //         if (Math.random() > 0.5) {
+            //             resolve({ name: 'Svelte Sonner' });
+            //         } else {
+            //             reject();
+            //         }
+            //     }, 1500)
+            // );
+            // toast.promise(promise, {
+            //     loading: 'Loading...',
+            //     success: (data: any) => {
+            //         return data.name + ' toast has been added';
+            //     },
+            //     error: 'Error... :( Try again!',
+            // });
+        }
+        if (event.key === 'x') {
+            console.log('imported component: ', Test);
+            try {
+                // console.log("mounting with 'mount()'");
+                // mount(Test, { target: document.querySelector('.planetWrap')!,  });
+                console.log("mounting with 'mount()'");
+                mount(Test, { target: document.querySelector('.planetWrap')! });
+            } catch (e) {
+                console.error(e);
+            }
         }
     });
 }
@@ -251,13 +263,13 @@ async function main() {
     const game = await wait_for_game_to_load();
     init_globals(game);
 
-    $('body').append(
-        $('<script />', {
-            html: webc,
-        })
-    );
+    // $('body').append(
+    //     $('<script />', {
+    //         html: webc,
+    //     })
+    // );
 
-    $('.planetWrap').append($('<hello-world id="me" name="tom"></hello-world>'));
+    // $('.planetWrap').append($('<hello-world id="me" name="tom"></hello-world>'));
 
     // ------------- UNIVERSAL ------------ //
 
