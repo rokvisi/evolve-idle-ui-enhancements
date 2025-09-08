@@ -13,10 +13,8 @@ import {
 import { ImgFactory } from './ImgFactory.js';
 import { GLOBALS, init_globals } from './globals.js';
 import { tab_manager } from './TabManager.js';
-
-import Test from './svelte/Test.svelte';
-
-// import webc from './web-components/hello.min.js' with { type: 'text' };
+import { Toaster } from 'svelte-sonner';
+import { toast } from 'svelte-sonner';
 import { mount } from 'svelte';
 
 function popper_handler(element: JQuery<HTMLElement>) {
@@ -212,6 +210,14 @@ async function start_observing_message_log() {
     }
 }
 
+function load_svelte_components() {
+    // Mount 'svelte-sonner' toaster.
+    mount(Toaster, {
+        target: document.body,
+        props: { richColors: true, theme: 'dark', position: 'top-right', closeButton: true, duration: 2000 },
+    });
+}
+
 async function attach_debug_stuff() {
     console.log({
         species: GLOBALS.SPECIES,
@@ -220,39 +226,26 @@ async function attach_debug_stuff() {
         universe: GLOBALS.UNIVERSE,
     });
 
-    let toast: any;
-
     document.addEventListener('keydown', async (event) => {
         if (event.key === 'z') {
-            // const aa = document.getElementById('me')! as any;
-            // toast = aa.toast;
-            // const promise = new Promise((resolve, reject) =>
-            //     setTimeout(() => {
-            //         if (Math.random() > 0.5) {
-            //             resolve({ name: 'Svelte Sonner' });
-            //         } else {
-            //             reject();
-            //         }
-            //     }, 1500)
-            // );
-            // toast.promise(promise, {
-            //     loading: 'Loading...',
-            //     success: (data: any) => {
-            //         return data.name + ' toast has been added';
-            //     },
-            //     error: 'Error... :( Try again!',
-            // });
+            const promise = new Promise((resolve, reject) =>
+                setTimeout(() => {
+                    if (Math.random() > 0.5) {
+                        resolve({ name: 'Svelte Sonner' });
+                    } else {
+                        reject();
+                    }
+                }, 1500)
+            );
+            toast.promise(promise, {
+                loading: 'Loading...',
+                success: (data: any) => {
+                    return data.name + ' toast has been added';
+                },
+                error: 'Error... :( Try again!',
+            });
         }
         if (event.key === 'x') {
-            console.log('imported component: ', Test);
-            try {
-                // console.log("mounting with 'mount()'");
-                // mount(Test, { target: document.querySelector('.planetWrap')!,  });
-                console.log("mounting with 'mount()'");
-                mount(Test, { target: document.querySelector('.planetWrap')! });
-            } catch (e) {
-                console.error(e);
-            }
         }
     });
 }
@@ -263,18 +256,16 @@ async function main() {
     const game = await wait_for_game_to_load();
     init_globals(game);
 
-    // $('body').append(
-    //     $('<script />', {
-    //         html: webc,
-    //     })
-    // );
-
-    // $('.planetWrap').append($('<hello-world id="me" name="tom"></hello-world>'));
-
-    // ------------- UNIVERSAL ------------ //
-
     // Misc debug stuff.
     await attach_debug_stuff();
+
+    // Add custom css. (For now only generated for the svelte components.)
+    GM.addStyle(GM.getResourceText('compiledStyles'));
+
+    // Load our custom svelte components in various places.
+    load_svelte_components();
+
+    // ------------- UNIVERSAL ------------ //
 
     // Change stone to amber for certain species.
     change_stone_to_amber_if_needed();
@@ -322,7 +313,6 @@ async function main() {
             // Also PUT 90% main in the TabManger function that initializes the tab logic. Create ResourceManager or something to handle the resurce column (applies images, highlights, etc). other Managers might be needed.
             // also todo:
             // unify this and the evolve_cloud_save.
-            // Add a better toast (svelte-sonner with web-components via compiled svelte?).
 
             // Updat the globals.
             GLOBALS.SPECIES = new_species;
