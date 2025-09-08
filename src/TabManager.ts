@@ -20,6 +20,8 @@ class TabManager {
     #selected_sub_tab: string | null = null;
     #sub_tabs_with_on_click_handlers: JQuery<HTMLElement>[] = [];
 
+    init = () => {};
+
     // Each specific resource handler can override this function.
     // It is called before switching to a new main+sub tab combo.
     #tab_specific_cleanup_function = () => {

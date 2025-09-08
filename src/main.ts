@@ -14,6 +14,8 @@ import { ImgFactory } from './ImgFactory.js';
 import { GLOBALS, init_globals } from './globals.js';
 import { tab_manager } from './TabManager.js';
 
+import webc from './web-components/hello.min.js' with { type: 'text' };
+
 function popper_handler(element: JQuery<HTMLElement>) {
     // Hovering "Oil Powerplant" OR "Wind Farm"
     // If the element is the wind farm, add a "surplus-power" annotation to the popper.
@@ -215,9 +217,30 @@ async function attach_debug_stuff() {
         universe: GLOBALS.UNIVERSE,
     });
 
+    let toast: any;
+
     document.addEventListener('keydown', async (event) => {
         if (event.key === 'z') {
-            console.log(event.key);
+            const aa = document.getElementById('me')! as any;
+            toast = aa.toast;
+
+            const promise = new Promise((resolve, reject) =>
+                setTimeout(() => {
+                    if (Math.random() > 0.5) {
+                        resolve({ name: 'Svelte Sonner' });
+                    } else {
+                        reject();
+                    }
+                }, 1500)
+            );
+
+            toast.promise(promise, {
+                loading: 'Loading...',
+                success: (data: any) => {
+                    return data.name + ' toast has been added';
+                },
+                error: 'Error... :( Try again!',
+            });
         }
     });
 }
@@ -227,6 +250,14 @@ async function main() {
     // ------------- WAIT FOR THE GAME TO LOAD ------------ //
     const game = await wait_for_game_to_load();
     init_globals(game);
+
+    $('body').append(
+        $('<script />', {
+            html: webc,
+        })
+    );
+
+    $('.planetWrap').append($('<hello-world id="me" name="tom"></hello-world>'));
 
     // ------------- UNIVERSAL ------------ //
 
@@ -261,6 +292,30 @@ async function main() {
             tab_manager.on_main_tab_click();
         });
     });
+
+    // Launch a worker "cron-job" to monitor game state.
+    setInterval(() => {
+        // Check for "species" changes.
+        if (GLOBALS.SPECIES !== game.global.race.species) {
+            const old_species = GLOBALS.SPECIES;
+            const new_species = game.global.race.species;
+
+            // Handling the species change event is only usefull for the transition from protoplasm -> species. Since the page hard-reloads on soft-resets. But it doesn't hard-reload on resets... or maybe it does?
+            console.log('Species changed from:', old_species, 'to:', new_species);
+
+            // Update the global state. (Essentially re-run 'main()', because new menus got created and the tab manager needs to re-attach handlers.)
+            // main();
+            // As it currently stands, we can't invoke main, because it creates an interval and such. Also a lot of duplicate logic would run.
+            // Need to research which parts of main() actually need to be re-run on species change.
+            // Also PUT 90% main in the TabManger function that initializes the tab logic. Create ResourceManager or something to handle the resurce column (applies images, highlights, etc). other Managers might be needed.
+            // also todo:
+            // unify this and the evolve_cloud_save.
+            // Add a better toast (svelte-sonner with web-components via compiled svelte?).
+
+            // Updat the globals.
+            GLOBALS.SPECIES = new_species;
+        }
+    }, 200);
 }
 
 // Wait for the game UI to load, then run the main function.
