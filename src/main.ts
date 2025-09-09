@@ -16,6 +16,7 @@ import { tab_manager } from './TabManager.js';
 import { Toaster } from 'svelte-sonner';
 import { toast } from 'svelte-sonner';
 import { mount } from 'svelte';
+import { resource_manager } from './ResourceManager.js';
 
 function popper_handler(element: JQuery<HTMLElement>) {
     // Hovering "Oil Powerplant" OR "Wind Farm"
@@ -160,31 +161,6 @@ async function wait_for_game_to_load() {
     });
 }
 
-function change_stone_to_amber_if_needed() {
-    // Get the current species.
-    const species = GLOBALS.SPECIES;
-
-    // Change stone to amber for specific species.
-    const AMBER_SPECIES = ['ent', 'pinguicula'];
-    if (AMBER_SPECIES.includes(species)) {
-        RESOURCES.find((r) => r.name === 'Stone')!.img = 'R_Amber';
-    }
-}
-
-async function add_images_to_resource_column() {
-    for (const resource of RESOURCES) {
-        const resource_el = $(resource.id.resources);
-
-        await add_resource_img(resource_el, resource.img);
-    }
-}
-
-function add_hover_highlights_to_resource_column() {
-    $('#resources > div').each(function () {
-        add_highlight_on_hover($(this));
-    });
-}
-
 async function start_observing_message_log() {
     // Observe the message log for fortress messages.
     const messageQueueLog = document.getElementById('msgQueueLog');
@@ -250,58 +226,15 @@ async function attach_debug_stuff() {
     });
 }
 
-// Entry point.
-async function main() {
-    // ------------- WAIT FOR THE GAME TO LOAD ------------ //
-    const game = await wait_for_game_to_load();
-    init_globals(game);
-
-    // Misc debug stuff.
-    await attach_debug_stuff();
-
-    // Add custom css. (For now only generated for the svelte components.)
-    GM.addStyle(GM.getResourceText('compiledStyles'));
-
-    // Load our custom svelte components in various places.
-    load_svelte_components();
-
-    // ------------- UNIVERSAL ------------ //
-
-    // Change stone to amber for certain species.
-    change_stone_to_amber_if_needed();
-
-    // Observe the message log for fortress messages.
-    start_observing_message_log();
-
-    // Add resource images to the main resource tab.
-    await add_images_to_resource_column();
-
-    // Add hover highlights to the main resource tab.
-    add_hover_highlights_to_resource_column();
-
-    // Watch for the 'popper' element to appear.
-    const stop = watch_element_dom_mutation('#popper', popper_handler);
-
-    // --------------- TABS --------------- //
-
-    // Auto-fire for the automatically selected tab.
-    tab_manager.on_main_tab_click();
-
-    // Attach on-click handlers to the main tabs.
-    // TODO: Also attaches to hidden main tabs. Fix this.
-    const main_tabs = $('#mainTabs > nav > ul > li');
-    main_tabs.each(function () {
-        $(this).on('click', function () {
-            tab_manager.on_main_tab_click();
-        });
-    });
-
-    // Launch a worker "cron-job" to monitor game state.
+function start_game_state_monitoring() {
     setInterval(() => {
+        // Should be moved out to a gamestate sync manager.
+
         // Check for "species" changes.
-        if (GLOBALS.SPECIES !== game.global.race.species) {
+        // Comparing two globals seems like lying. globals should only store the most current state. NO OLD STATES!
+        if (GLOBALS.SPECIES !== GLOBALS.GAME.global.race.species) {
             const old_species = GLOBALS.SPECIES;
-            const new_species = game.global.race.species;
+            const new_species = GLOBALS.GAME.global.race.species;
 
             // Handling the species change event is only usefull for the transition from protoplasm -> species. Since the page hard-reloads on soft-resets. But it doesn't hard-reload on resets... or maybe it does?
             console.log('Species changed from:', old_species, 'to:', new_species);
@@ -318,6 +251,37 @@ async function main() {
             GLOBALS.SPECIES = new_species;
         }
     }, 200);
+}
+
+// Entry point.
+async function main() {
+    // Wait for the game to load.
+    const game = await wait_for_game_to_load();
+    init_globals(game);
+
+    // Misc debug stuff.
+    await attach_debug_stuff();
+
+    // Add custom css. (For now only generated for the svelte components.)
+    GM.addStyle(GM.getResourceText('compiledStyles'));
+
+    // Load our custom svelte components in various places.
+    load_svelte_components();
+
+    // Init Managers
+    await resource_manager.init();
+    tab_manager.init();
+
+    // ------------------ Dynamic ------------------ //
+
+    // Launch a worker "cron-job" to monitor game state.
+    start_game_state_monitoring();
+
+    // Observe the message log for fortress messages.
+    start_observing_message_log();
+
+    // Watch for the 'popper' element to appear.
+    const stop = watch_element_dom_mutation('#popper', popper_handler);
 }
 
 // Wait for the game UI to load, then run the main function.

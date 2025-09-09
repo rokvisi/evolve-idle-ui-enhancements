@@ -9,6 +9,7 @@ type GlobalsType = {
     UNIVERSE: any | undefined;
 };
 
+// Improve the structure (group colors, etc.)
 export const GLOBALS: GlobalsType = {
     TABLE_ITEM_BG_COLOR_ALT: undefined,
     TABLE_ITEM_BG_COLOR: undefined,

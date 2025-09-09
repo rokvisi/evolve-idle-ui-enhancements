@@ -1,4 +1,4 @@
-import { userscript } from './build-helpers/build-userscript.mjs';
+import { userscript } from './build-helpers/build-userscript';
 import { SveltePlugin } from 'bun-plugin-svelte';
 
 try {

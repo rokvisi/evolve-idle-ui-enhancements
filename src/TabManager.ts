@@ -20,7 +20,19 @@ class TabManager {
     #selected_sub_tab: string | null = null;
     #sub_tabs_with_on_click_handlers: JQuery<HTMLElement>[] = [];
 
-    init = () => {};
+    init = () => {
+        // Auto-fire for the auto-selected tab.
+        this.on_primary_tab_click();
+    
+        // Attach on-click handlers to the main tabs.
+        // TODO: Also attaches to hidden main tabs. Fix this.
+        const main_tabs = $('#mainTabs > nav > ul > li');
+        main_tabs.each(function () {
+            $(this).on('click', function () {
+                tab_manager.on_primary_tab_click();
+            });
+        });
+    };
 
     // Each specific resource handler can override this function.
     // It is called before switching to a new main+sub tab combo.
@@ -139,7 +151,7 @@ class TabManager {
         return true;
     }
 
-    on_main_tab_click() {
+    on_primary_tab_click() {
         // Sync the selected main and sub tabs. If the tabs have not changed, do nothing.
         const tab_changed = this.sync_selected_tabs();
         if (!tab_changed) return;
@@ -155,7 +167,7 @@ class TabManager {
         this.run_tab_specific_handler();
 
         // Alias instance methods to avoid "this" issues.
-        const THIS__on_sub_tab_click = () => this.on_sub_tab_click();
+        const THIS__on_sub_tab_click = () => this.on_secondary_tab_click();
         const THIS__push_sub_tab_click_handler = (element: JQuery<HTMLElement>) =>
             this.#sub_tabs_with_on_click_handlers.push(element);
 
@@ -172,7 +184,7 @@ class TabManager {
         });
     }
 
-    on_sub_tab_click() {
+    on_secondary_tab_click() {
         // Sync the selected main and sub tabs. If the tabs have not changed, do nothing.
         const tab_changed = this.sync_selected_tabs();
         if (!tab_changed) return;

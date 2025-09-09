@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { userscript_resources } from './userscript-resources.mjs';
+import { userscript_resources } from './userscript-resources';
 
 const header = readFileSync('./build-helpers/userscript-header.txt', 'utf8');
 const footer = readFileSync('./build-helpers/userscript-footer.txt', 'utf8');
