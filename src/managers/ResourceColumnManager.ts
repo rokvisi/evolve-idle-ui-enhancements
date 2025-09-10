@@ -1,8 +1,8 @@
-import { RESOURCES } from './data/resources';
-import { GLOBALS } from './globals';
-import { add_highlight_on_hover, add_resource_img } from './utils';
+import { RESOURCES } from '../data/resources';
+import { GLOBALS } from '../globals';
+import { add_highlight_on_hover, add_resource_img } from '../utils';
 
-class ResourceManager {
+class ResourceColumnManager {
     init = async () => {
         // Change stone to amber for certain species.
         this.change_stone_to_amber_if_needed();
@@ -14,13 +14,13 @@ class ResourceManager {
         this.add_hover_highlights_to_resource_column();
     };
 
+    // This doesn't belong in the resource manager because it mutates globals.
+    // But it's the most convenient place for it right now.
+    // TODO: Move this into GlobalsManager when it's implemented (globals management also needed for watching state changes, which is also in the wrong place atm.)
     change_stone_to_amber_if_needed() {
-        // Get the current species.
-        const species = GLOBALS.SPECIES;
-
-        // Change stone to amber for specific species.
-        const AMBER_SPECIES = ['ent', 'pinguicula'];
-        if (AMBER_SPECIES.includes(species)) {
+        // Check for the sappy trait.
+        if (GLOBALS.GAME.global.race.sappy) {
+            // Replace stone's image with amber (still stone tho).
             RESOURCES.find((r) => r.name === 'Stone')!.img = 'R_Amber';
         }
     }
@@ -40,4 +40,4 @@ class ResourceManager {
     };
 }
 
-export const resource_manager = new ResourceManager();
+export const resource_column_manager = new ResourceColumnManager();

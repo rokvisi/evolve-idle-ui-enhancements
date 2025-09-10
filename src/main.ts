@@ -1,134 +1,15 @@
 import '@violentmonkey/types';
-import { find_resource_by_data_attr, RESOURCES } from './data/resources.js';
 import { observe as VMObserve } from '@violentmonkey/dom';
-import {
-    beep,
-    watch_element_dom_mutation,
-    fmtNumber,
-    add_highlight_on_hover,
-    highlight_item,
-    remove_highlight_from_item,
-    add_resource_img,
-} from './utils.js';
-import { ImgFactory } from './ImgFactory.js';
 import { GLOBALS, init_globals } from './globals.js';
-import { tab_manager } from './TabManager.js';
 import { Toaster } from 'svelte-sonner';
 import { toast } from 'svelte-sonner';
 import { mount } from 'svelte';
-import { resource_manager } from './ResourceManager.js';
-
-function popper_handler(element: JQuery<HTMLElement>) {
-    // Hovering "Oil Powerplant" OR "Wind Farm"
-    // If the element is the wind farm, add a "surplus-power" annotation to the popper.
-    if (element.attr('data-id') === 'city-oil_power') {
-        const oil_power_el = $('#city-oil_power');
-
-        const building_name = oil_power_el.find('.aTitle').first().text().trim();
-        const building_count_str = oil_power_el.find('.count').first().text().trim();
-        const building_count = parseInt(building_count_str);
-
-        if (building_name === 'Wind Farm') {
-            // TODO: Make sure to update this if the constant power changes.
-            // TODO: Ideally parse from wiki or some other source (game data?)
-            const constant_power = 4;
-
-            let power_text_el = element.children().last();
-            // If the item is a popTimer (building unafordable right-now), we need to get the previous element.
-            if (power_text_el.attr('id') === 'popTimer') {
-                power_text_el = power_text_el.prev();
-            }
-
-            const outPowerStr = power_text_el.text().replaceAll('+', ' ').replaceAll('MW', '').trim();
-            const outPower = parseInt(outPowerStr);
-
-            if (outPower > constant_power) {
-                // Add the surplus power annotation.
-                const surplus_power = (outPower - constant_power) * building_count;
-                const surplus_power_annotation = $('<p>').text(`Total Power Surplus: ${surplus_power} MW`).css({
-                    color: 'green',
-                    'background-color': 'oklch(20.5% 0 0)',
-                    padding: '2px 4px',
-                    'font-weight': 400,
-                    'border-radius': '4px',
-                    'font-family': 'Lato, mono',
-                    'font-size': '0.8rem',
-                });
-
-                power_text_el.append(surplus_power_annotation);
-            }
-        }
-    }
-
-    // Find the cost list <div> or return early.
-    let cost_list_el: HTMLElement | undefined = undefined;
-    for (const child of element.children()) {
-        if (child.classList.contains('costList')) {
-            cost_list_el = child;
-        }
-    }
-    if (!cost_list_el) return () => {};
-
-    // Iterate over the cost list items.
-    const mutated_main_resources: JQuery<HTMLElement>[] = [];
-    for (const child of Array.from(cost_list_el.children)) {
-        const cost_item_el = $(child);
-
-        // Find the resource data attribute.
-        const resource_data_attribute = Array.from(child.attributes).find((attr) => attr.name.startsWith('data-'));
-        if (!resource_data_attribute) continue;
-
-        // Find the resource by the data attribute.
-        const resource = find_resource_by_data_attr(resource_data_attribute.name);
-        if (!resource) continue;
-
-        // Highlight the main resource.
-        const main_resource_el = $(resource.id.resources);
-        highlight_item(main_resource_el);
-
-        // Add cost annotation to the main resource.
-        const cost = fmtNumber(-resource_data_attribute.value);
-        main_resource_el.find('span.count').prepend(
-            $('<span>').text(cost).attr('id', 'cost-annotation').css({
-                display: 'inline-block',
-                color: 'red',
-                'background-color': 'oklch(20.5% 0 0)',
-                // 'margin-top': "auto",
-                // 'margin-bottom': 'auto',
-                padding: '0px 4px',
-                'font-weight': 400,
-                'border-radius': '4px',
-                'font-family': 'Lato, mono',
-                'font-size': '0.8rem',
-                'margin-right': '2px',
-                height: 'auto',
-            })
-        );
-
-        mutated_main_resources.push(main_resource_el);
-
-        // Add the image to the cost item.
-        (async () => {
-            const img_el = await ImgFactory.get_global_img_el(resource.img);
-
-            cost_item_el.css({
-                display: 'flex',
-                'align-items': 'center',
-                'justify-content': 'center',
-                gap: '5px',
-            });
-
-            cost_item_el.prepend(img_el);
-        })();
-    }
-
-    return () => {
-        mutated_main_resources.forEach((el) => {
-            remove_highlight_from_item(el);
-            el.find('#cost-annotation').remove();
-        });
-    };
-}
+import { game_tab_manager } from './managers/GameTabManager';
+import { resource_column_manager } from './managers/ResourceColumnManager';
+import { message_log_manager } from './managers/MessageLogManager';
+import { popper_manager } from './managers/PopperManager.js';
+import type { AchievementValues, Universe, UniverseShorthand } from './types.js';
+import Counter from './svelte/Counter.svelte';
 
 async function wait_for_game_to_load() {
     const start_time = Date.now();
@@ -161,36 +42,16 @@ async function wait_for_game_to_load() {
     });
 }
 
-async function start_observing_message_log() {
-    // Observe the message log for fortress messages.
-    const messageQueueLog = document.getElementById('msgQueueLog');
-    if (messageQueueLog) {
-        VMObserve(messageQueueLog, (mutationRecords) => {
-            const mutationRecord = mutationRecords[0];
-            if (!mutationRecord) return;
-
-            // Try to find the interesting messages in the log.
-            mutationRecord.addedNodes.forEach((addedNode) => {
-                const nodeText = addedNode.textContent?.trim()?.toLowerCase();
-                if (!nodeText) return;
-
-                // Check for fortress overrun messages.
-                if (nodeText.startsWith('your fortress was overrun')) {
-                    beep();
-                    alert('Fortress overrun!');
-                }
-            });
-        });
-    } else {
-        console.warn('Message log element not found. Skipping message log observation.');
-    }
-}
-
 function load_svelte_components() {
     // Mount 'svelte-sonner' toaster.
     mount(Toaster, {
         target: document.body,
         props: { richColors: true, theme: 'dark', position: 'top-right', closeButton: true, duration: 2000 },
+    });
+
+    console.log('Mounting Counter component...');
+    mount(Counter, {
+        target: document.body.querySelector('.planetWrap')!,
     });
 }
 
@@ -253,35 +114,142 @@ function start_game_state_monitoring() {
     }, 200);
 }
 
+function get_non_bioseeded_planets() {
+    const non_bioseeded_planets: string[] = [];
+    const non_bioseeded_traits: string[] = [];
+
+    const universeShorthandMap: Record<Universe, UniverseShorthand> = {
+        standard: 'l',
+        evil: 'e',
+        antimatter: 'a',
+        micro: 'm', // TODO: Porbably wrong
+        heavy: 'h',
+        magic: 'M', // TODO: Porbably wrong
+    };
+
+    // Get the current universe shorthand.
+    const shorthand = universeShorthandMap[GLOBALS.UNIVERSE!];
+    if (!shorthand) {
+        console.warn('Unknown universe shorthand for the current universe:', GLOBALS.UNIVERSE);
+        console.warn('Skipping reading achievements.');
+        return { non_bioseeded_planets, non_bioseeded_traits };
+    }
+
+    for (const [achievementName, achievementValues] of Object.entries(
+        GLOBALS.GAME.global.stats.achieve as Record<string, Record<UniverseShorthand, number | undefined>>
+    )) {
+        // Iterate over planet traits.
+        if (achievementName.startsWith('atmo_')) {
+            // Get the achievement level for the current universe.
+            const level = achievementValues[shorthand];
+            if (!level || level < 5) {
+                const traitName = achievementName.replace('atmo_', '');
+                non_bioseeded_traits.push(traitName);
+            }
+        }
+
+        // Iterate over planet biomes.
+        if (achievementName.startsWith('biome_')) {
+            // Get the achievement level for the current universe.
+            const level = achievementValues[shorthand];
+            if (!level || level < 5) {
+                const biomeName = achievementName.replace('biome_', '');
+                non_bioseeded_planets.push(biomeName);
+            }
+        }
+
+        continue;
+    }
+
+    return { non_bioseeded_planets, non_bioseeded_traits };
+}
+
 // Entry point.
 async function main() {
     // Wait for the game to load.
     const game = await wait_for_game_to_load();
     init_globals(game);
 
+    // Add the custom css generated at build time. (as of now, only for svelte components)
+    GM.addStyle(GM.getResourceText('compiledStyles'));
+
     // Misc debug stuff.
     await attach_debug_stuff();
-
-    // Add custom css. (For now only generated for the svelte components.)
-    GM.addStyle(GM.getResourceText('compiledStyles'));
 
     // Load our custom svelte components in various places.
     load_svelte_components();
 
     // Init Managers
-    await resource_manager.init();
-    tab_manager.init();
-
-    // ------------------ Dynamic ------------------ //
+    popper_manager.init();
+    game_tab_manager.init();
+    message_log_manager.init();
+    await resource_column_manager.init();
 
     // Launch a worker "cron-job" to monitor game state.
+
+    // TODO: ONLY RUN ON PLANET SELECTION AND NOT EVOLUTION.
+    if (GLOBALS.SPECIES === 'protoplasm') {
+        const { non_bioseeded_planets, non_bioseeded_traits } = get_non_bioseeded_planets();
+
+        // Abort if we are in the evolution phase.
+        if ($('#evolution > div.action')[0]?.id.startsWith('evolution')) {
+            console.log('In evolution phase, skipping bioseed highlights.');
+            return;
+        }
+
+        // Abort in universe selection screen.
+        // TODO: Later.
+
+        // Abort in custom species creation screen.
+        // TODO: Later.
+
+        // TODO: Or better yet, check if #evolution > div.action ids start with planet names (Desert23213). Need to have a list of all planet biomes for that.
+
+        // Select all planets and highlight the ones that need bioseeding.
+        const planets = $('#evolution > div.action > a > span.aTitle').each(function () {
+            // Get the planet biomes and traits. Drop the last word (meaningless number).
+            const planetTextTokens = $(this).text().toLowerCase().split(' ').slice(0, -1);
+            const planetName = planetTextTokens.at(-1);
+            const planetTraits = planetTextTokens.slice(0, -1); // All but the last word.
+
+            if (!planetName) {
+                console.log('Failed to parse planet name.');
+                return;
+            }
+
+            // Check if the planet is non-bioseeded.
+            if (non_bioseeded_planets.includes(planetName)) {
+                const uppercasedPlanetName = planetName.charAt(0).toUpperCase() + planetName.slice(1);
+
+                const newHtml = $(this)
+                    .html()
+                    .replace(
+                        uppercasedPlanetName,
+                        `<span style="color: #74C365; font-weight: medium;">${uppercasedPlanetName}</span>`
+                    );
+
+                $(this).html(newHtml);
+            }
+
+            // Check if the planet has non-bioseeded traits.
+            for (const trait of planetTraits) {
+                if (non_bioseeded_traits.includes(trait)) {
+                    const uppercaseTrait = trait.charAt(0).toUpperCase() + trait.slice(1);
+
+                    const newHtml = $(this)
+                        .html()
+                        .replace(
+                            uppercaseTrait,
+                            `<span style="color: #74C365; font-weight: medium;">${uppercaseTrait}</span>`
+                        );
+
+                    $(this).html(newHtml);
+                }
+            }
+        });
+    }
+
     start_game_state_monitoring();
-
-    // Observe the message log for fortress messages.
-    start_observing_message_log();
-
-    // Watch for the 'popper' element to appear.
-    const stop = watch_element_dom_mutation('#popper', popper_handler);
 }
 
 // Wait for the game UI to load, then run the main function.

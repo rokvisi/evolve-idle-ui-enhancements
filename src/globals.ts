@@ -1,3 +1,5 @@
+import type { Universe } from './types';
+
 type GlobalsType = {
     TABLE_ITEM_BG_COLOR_ALT: string | undefined;
     TABLE_ITEM_BG_COLOR: string | undefined;
@@ -6,7 +8,7 @@ type GlobalsType = {
     PLANET: any | undefined;
     SPECIES: any | undefined;
     PLANET_TRAITS: any[] | undefined;
-    UNIVERSE: any | undefined;
+    UNIVERSE: Universe | undefined;
 };
 
 // Improve the structure (group colors, etc.)

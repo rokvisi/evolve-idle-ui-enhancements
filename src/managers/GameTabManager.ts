@@ -4,7 +4,7 @@ import {
     find_resource_by_market_id,
     find_resource_by_resource_id,
     find_resource_by_storage_id,
-} from './data/resources.js';
+} from '../data/resources.js';
 import {
     beep,
     watch_element_dom_mutation,
@@ -13,9 +13,9 @@ import {
     highlight_item,
     remove_highlight_from_item,
     add_resource_img,
-} from './utils.js';
+} from '../utils.js';
 
-class TabManager {
+class GameTabManager {
     #selected_main_tab: string | null = null;
     #selected_sub_tab: string | null = null;
     #sub_tabs_with_on_click_handlers: JQuery<HTMLElement>[] = [];
@@ -23,13 +23,14 @@ class TabManager {
     init = () => {
         // Auto-fire for the auto-selected tab.
         this.on_primary_tab_click();
-    
+
         // Attach on-click handlers to the main tabs.
         // TODO: Also attaches to hidden main tabs. Fix this.
         const main_tabs = $('#mainTabs > nav > ul > li');
+        const THIS = this;
         main_tabs.each(function () {
             $(this).on('click', function () {
-                tab_manager.on_primary_tab_click();
+                THIS.on_primary_tab_click();
             });
         });
     };
@@ -522,4 +523,4 @@ class TabManager {
     }
 }
 
-export const tab_manager = new TabManager();
+export const game_tab_manager = new GameTabManager();
