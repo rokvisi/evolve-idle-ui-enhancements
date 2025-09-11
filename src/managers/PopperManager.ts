@@ -1,6 +1,6 @@
-import { find_resource_by_data_attr } from '../data/resources';
-import { ImgFactory } from '../ImgFactory';
-import { fmtNumber, highlight_item, remove_highlight_from_item, watch_element_dom_mutation } from '../utils';
+import { find_resource_by_data_attr } from '$src/data/resources';
+import { ImgFactory } from '$src/ImgFactory';
+import { fmtNumber, highlight_item, remove_highlight_from_item, watch_element_dom_mutation } from '$src/utils';
 
 class PopperManager {
     #stopObserving: (() => void) | null = null;

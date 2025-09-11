@@ -1,5 +1,6 @@
 import { observe as VMObserve } from '@violentmonkey/dom';
-import { beep } from '../utils';
+import { beep } from '$src/utils';
+import { userscript_settings } from '$src/managers/UserscriptSettings';
 
 class MessageLogManager {
     #stopObserving: (() => void) | null = null;
@@ -44,8 +45,10 @@ class MessageLogManager {
             return;
         }
 
-        // Beep for all other messsages.
-        beep();
+        // Beep for all other messages. (if enabled in settings)
+        if (userscript_settings.get('beep_on_new_message')) {
+            beep();
+        }
     };
 }
 

@@ -1,13 +1,16 @@
-import { beepAudioSrc } from './data/beepAudio';
-import { GLOBALS } from './globals';
-import { ImgFactory } from './ImgFactory';
+import { beepAudioSrc } from '$src/data/beepAudio';
+import { GLOBALS } from '$src/globals';
+import { ImgFactory } from '$src/ImgFactory';
 
 const num_formatter = new Intl.NumberFormat('en-US', {
     notation: 'compact',
 });
-
 export function fmtNumber(num: number): string {
     return num_formatter.format(num);
+}
+
+export async function copyToClipboard(text: string) {
+    await navigator.clipboard.writeText(text);
 }
 
 export function beep() {

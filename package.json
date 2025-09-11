@@ -5,22 +5,34 @@
         "typescript": "^5"
     },
     "dependencies": {
+        "@lucide/svelte": "^0.544.0",
         "@violentmonkey/dom": "^2.2.1",
-        "jquery": "^3.7.1"
+        "bun-plugin-tailwind": "^0.0.15",
+        "clsx": "^2.1.1",
+        "jquery": "^3.7.1",
+        "tailwind-merge": "^3.3.1",
+        "tailwind-variants": "^3.1.1",
+        "tailwindcss": "^4.1.13",
+        "valibot": "^1.1.0"
     },
     "scripts": {
         "build": "bun build.ts",
-        "serve": "http-server -c-1"
+        "serve": "bun --watch serve.ts",
+        "serve_old": "http-server -c-1"
     },
     "devDependencies": {
         "@types/bun": "latest",
         "@types/jquery": "^3.5.32",
         "@violentmonkey/types": "^0.2.2",
+        "bits-ui": "^2.11.0",
         "bun-plugin-svelte": "^0.0.6",
+        "chalk": "^5.6.2",
         "http-server": "^14.1.1",
         "prettier": "^3.6.2",
         "prettier-plugin-svelte": "^3.4.0",
+        "prettier-plugin-tailwindcss": "^0.6.14",
         "svelte": "^5.38.7",
-        "svelte-sonner": "^1.0.5"
+        "svelte-sonner": "^1.0.5",
+        "tw-animate-css": "^1.3.8"
     }
 }

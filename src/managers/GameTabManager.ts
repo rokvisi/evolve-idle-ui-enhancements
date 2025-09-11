@@ -4,7 +4,7 @@ import {
     find_resource_by_market_id,
     find_resource_by_resource_id,
     find_resource_by_storage_id,
-} from '../data/resources.js';
+} from '$src/data/resources';
 import {
     beep,
     watch_element_dom_mutation,
@@ -13,7 +13,7 @@ import {
     highlight_item,
     remove_highlight_from_item,
     add_resource_img,
-} from '../utils.js';
+} from '$src/utils';
 
 class GameTabManager {
     #selected_main_tab: string | null = null;

@@ -1,4 +1,4 @@
-import { SPECIES } from './species.js';
+import { SPECIES } from '$src/data/species.js';
 
 // WEBP => "Lumber.webp"
 // --------------------

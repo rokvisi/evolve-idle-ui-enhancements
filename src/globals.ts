@@ -1,4 +1,4 @@
-import type { Universe } from './types';
+import type { Universe } from '$src/types';
 
 type GlobalsType = {
     TABLE_ITEM_BG_COLOR_ALT: string | undefined;

@@ -1,6 +1,6 @@
-import { RESOURCES } from '../data/resources';
-import { GLOBALS } from '../globals';
-import { add_highlight_on_hover, add_resource_img } from '../utils';
+import { RESOURCES } from '$src/data/resources';
+import { GLOBALS } from '$src/globals';
+import { add_highlight_on_hover, add_resource_img } from '$src/utils';
 
 class ResourceColumnManager {
     init = async () => {

@@ -4,10 +4,11 @@
 // @match       https://pmotschmann.github.io/Evolve/
 // @grant       none
 // @version     1.0
-// @author      -
+// @author      rokvisi
 // @description 11/03/2025, 16:42:55
 // @grant       GM.getResourceUrl
 // @grant       GM.addStyle
 // @grant       GM.getResourceText
 // @run-at      document-idle
-// @resource    compiledStyles evolve-ui-enhancements.user.css
+// @resource    shadow-dom-css evolve-ui-enhancements.user.css
+// @resource    tailwind-properties-css tailwind-properties.css

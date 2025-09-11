@@ -1,3 +1,4 @@
+import bunPluginTailwind from 'bun-plugin-tailwind';
 import { userscript } from './build-helpers/build-userscript';
 import { SveltePlugin } from 'bun-plugin-svelte';
 
@@ -11,6 +12,7 @@ try {
         target: 'browser',
         packages: 'bundle',
         plugins: [
+            bunPluginTailwind,
             SveltePlugin({
                 development: false,
                 forceSide: 'client',
