@@ -85,7 +85,23 @@
         <div class="flex items-center justify-end gap-2">
             <!-- TODO: Fix the look of this alert -->
             {#if changes_made}
-                <Alert.Root
+                <div
+                    class="bg-card border-border text-warning flex h-[36px] grow items-center justify-between rounded-md border pr-1.5 pl-3 text-sm font-medium"
+                >
+                    <div class="flex items-center gap-2">
+                        <AlertCircleIcon class="size-4" />
+                        <span>You have unsaved changes.</span>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        onclick={revert_changes}
+                        size="sm"
+                        class="h-6"
+                    >
+                        Revert Changes
+                    </Button>
+                </div>
+                <!-- <Alert.Root
                     variant="warning"
                     class="flex h-[36px] items-center gap-3 py-1"
                 >
@@ -99,7 +115,7 @@
                     >
                         Revert Changes
                     </Button>
-                </Alert.Root>
+                </Alert.Root> -->
             {/if}
             <Button
                 onclick={on_cancel}
