@@ -121,9 +121,14 @@
                 onclick={on_cancel}
                 variant="outline"
             >
-                Cancel
+                Close
             </Button>
-            <Button onclick={on_save}>Save</Button>
+            <Button
+                onclick={on_save}
+                disabled={!changes_made}
+            >
+                Save & Close
+            </Button>
         </div>
     </div>
 </Modal>
