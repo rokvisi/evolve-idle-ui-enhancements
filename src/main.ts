@@ -8,12 +8,12 @@ import { game_tab_manager } from '$src/managers/GameTabManager';
 import { resource_column_manager } from '$src/managers/ResourceColumnManager';
 import { message_log_manager } from '$src/managers/MessageLogManager';
 import { popper_manager } from '$src/managers/PopperManager';
-import type { AchievementValues, Universe, UniverseShorthand } from '$src/types';
-import CloudSave from '$svelte/CloudSave.svelte';
+import type { Universe, UniverseShorthand } from '$src/types';
 import CssImporter from '$svelte/CssImporter.svelte';
-import SettingsModal from '$svelte/SettingsModal.svelte';
 import { userscript_settings } from '$src/managers/UserscriptSettings';
 import SettingsTabAdditions from '$svelte/SettingsTabAdditions.svelte';
+import { attach_stylesheet } from '$src/utils';
+import { shadow_dom_helper } from '$src/managers/ShadowDomHelper';
 
 async function wait_for_game_to_load() {
     const start_time = Date.now();
@@ -46,59 +46,30 @@ async function wait_for_game_to_load() {
     });
 }
 
-// Resuse the style sheet object instead of creating a new one each time.
-// https://dev.to/westbrook/why-would-anyone-use-constructible-stylesheets-anyways-19ng#sharing
-function add_stylesheet(cssContent: string, document: Document | ShadowRoot) {
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(cssContent);
-    document.adoptedStyleSheets.push(sheet);
-}
-
-function create_shadow_dom(shadowRootAnchor: Element) {
-    const shadowWrapperOuter = document.createElement('div');
-    const shadowWrapperInner = document.createElement('div');
-
-    shadowRootAnchor.appendChild(shadowWrapperOuter);
-    const shadowRoot = shadowWrapperOuter.attachShadow({ mode: 'open' });
-    shadowRoot.appendChild(shadowWrapperInner);
-
-    return { shadowWrapperOuter, shadowWrapperInner, shadowRoot };
-}
-
-function create_shadcn_shadow_dom(shadowRootAnchor: Element) {
-    // Create the shadow dom.
-    const shadowDom = create_shadow_dom(shadowRootAnchor);
-
-    // Apply the dark theme to the shadow dom.
-    shadowDom.shadowWrapperInner.classList.add('dark');
-
-    // Inject the compiled css into the shadow dom.
-    add_stylesheet(GM.getResourceText('shadow-dom-css'), shadowDom.shadowRoot);
-
-    return shadowDom;
-}
-
 function load_svelte_components() {
-    const { shadowWrapperInner: toasterShadowWrapperInner } = create_shadcn_shadow_dom(document.body);
+    // Toaster (for notifications).
+    const { shadow_wrapper_inner: toaster_shadow_wrapper_inner } = shadow_dom_helper.create_shadcn_shadow_dom(
+        document.body
+    );
     console.log('[svelte components]: mounting Toaster.');
     mount(Toaster, {
-        target: toasterShadowWrapperInner,
+        target: toaster_shadow_wrapper_inner,
         props: { richColors: true, theme: 'dark', position: 'top-right', closeButton: true, duration: 3500 },
     });
 
     // Settings sub-tab.
-    const { shadowWrapperInner: settingsShadowWrapperInner } = create_shadcn_shadow_dom(
-        document.body.querySelectorAll('div.importExport')[1]!
-    );
+    const settings_tab_target = document.body.querySelectorAll('div.importExport')[1]!;
+    const { shadow_wrapper_inner: settings_shadow_wrapper_inner } =
+        shadow_dom_helper.create_shadcn_shadow_dom(settings_tab_target);
 
     console.log('[svelte components]: mounting CssImporter.');
     mount(CssImporter, {
-        target: settingsShadowWrapperInner,
+        target: settings_shadow_wrapper_inner,
     });
 
     console.log('[svelte components]: mounting SettingsTabAdditions.');
     mount(SettingsTabAdditions, {
-        target: settingsShadowWrapperInner,
+        target: settings_shadow_wrapper_inner,
     });
 }
 
@@ -112,28 +83,12 @@ async function attach_debug_stuff() {
 
     document.addEventListener('keydown', async (event) => {
         if (event.key === 'z') {
-            // const promise = new Promise((resolve, reject) =>
-            //     setTimeout(() => {
-            //         if (Math.random() > 0.5) {
-            //             resolve({ name: 'Svelte Sonner' });
-            //         } else {
-            //             reject();
-            //         }
-            //     }, 1500)
-            // );
-            // toast.promise(promise, {
-            //     loading: 'Loading...',
-            //     success: (data: any) => {
-            //         return data.name + ' toast has been added';
-            //     },
-            //     error: 'Error... :( Try again!',
-            // });
-
             toast.info('userscript_settings.beep_on_new_message: ' + userscript_settings.get('beep_on_new_message'), {
                 duration: 5000,
             });
         }
         if (event.key === 'x') {
+            // noop
         }
     });
 }
@@ -221,11 +176,11 @@ async function main() {
     const game = await wait_for_game_to_load();
     init_globals(game);
 
-    // No browser supports css @property rule inside the shadow DOM, they all ignore it entirely.
-    // Therefore, add the tailwind css @property definitions to the main document.
+    // No browser supports css @property rules inside the Shadow DOM, they all ignore it entirely.
+    // Therefore, we must add the css @property at-rules to a separate stylesheet and attach it to the main document.
     // https://stackoverflow.com/a/79037671
-    // TODO: The 'tailwind-properties.css' resource is currently manually created. We need to parse the compiled css and extract the @property rules at build time.
-    add_stylesheet(GM.getResourceText('tailwind-properties-css'), document);
+    const property_at_rules_stylesheet = shadow_dom_helper.extract_css_property_at_rules();
+    attach_stylesheet(property_at_rules_stylesheet, document);
 
     // Misc debug stuff.
     await attach_debug_stuff();
@@ -238,8 +193,6 @@ async function main() {
     game_tab_manager.init();
     message_log_manager.init();
     await resource_column_manager.init();
-
-    // Launch a worker "cron-job" to monitor game state.
 
     // TODO: ONLY RUN ON PLANET SELECTION AND NOT EVOLUTION.
     if (GLOBALS.SPECIES === 'protoplasm') {
@@ -303,6 +256,7 @@ async function main() {
         });
     }
 
+    // Launch a worker "cron-job" to monitor game state.
     start_game_state_monitoring();
 }
 

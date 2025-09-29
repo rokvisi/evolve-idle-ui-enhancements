@@ -11,4 +11,3 @@
 // @grant       GM.getResourceText
 // @run-at      document-idle
 // @resource    shadow-dom-css evolve-ui-enhancements.user.css
-// @resource    tailwind-properties-css tailwind-properties.css

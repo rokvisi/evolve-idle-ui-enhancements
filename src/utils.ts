@@ -108,3 +108,34 @@ export async function add_resource_img(resource_el: JQuery<Element>, image_id: s
     const img_el = await ImgFactory.create_img_el(image_id);
     text_parent_el.prepend(img_el);
 }
+
+export function create_stylesheet(css_content: string) {
+    const stylesheet = new CSSStyleSheet();
+    stylesheet.replaceSync(css_content);
+    return stylesheet;
+}
+
+export function attach_stylesheet(stylesheet: CSSStyleSheet, parent: Document | ShadowRoot) {
+    parent.adoptedStyleSheets.push(stylesheet);
+}
+
+export function extract_css_property_at_rules_from_content(css_content: string) {
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(css_content);
+
+    return extract_css_property_at_rules_from_stylesheet(sheet);
+}
+
+export function extract_css_property_at_rules_from_stylesheet(stylesheet: CSSStyleSheet) {
+    // Extract all @property at-rules.
+    let css_property_at_rules = '';
+    for (let i = 0; i < stylesheet.cssRules.length; i++) {
+        const rule = stylesheet.cssRules[i]!;
+
+        if (rule.cssText.startsWith('@property')) {
+            css_property_at_rules += rule.cssText + '\n';
+        }
+    }
+
+    return css_property_at_rules;
+}

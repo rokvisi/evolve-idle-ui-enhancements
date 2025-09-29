@@ -6,16 +6,16 @@
     import Switch from '$svelte/primitives/Switch.svelte';
     import Label from '$svelte/primitives/Label.svelte';
     import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
-    import * as Alert from '$svelte/primitives/alert/index';
     import { userscript_settings } from '$src/managers/UserscriptSettings';
 
     let modal_el: Modal;
+    let modal_ref: HTMLDialogElement | null = $state(null);
 
     const current_settings = $state(userscript_settings.get_all());
     const input_settings = $state(userscript_settings.get_all());
     const changes_made = $derived.by(() => {
         for (const key in input_settings) {
-            const typed_key = key as keyof typeof current_settings;
+            const typed_key = key as keyof typeof input_settings;
 
             if (input_settings[typed_key] !== current_settings[typed_key]) {
                 return true;
@@ -53,25 +53,30 @@
     <Settings /> UserScript Settings
 </Button>
 
-<Modal bind:this={modal_el}>
+<Modal
+    bind:this={modal_el}
+    bind:ref={modal_ref}
+>
     <div class="dark flex min-w-xl flex-col gap-5">
         <h3 class="text-lg font-semibold">UserScript Settings</h3>
 
-        <div class="flex flex-col gap-2">
-            <ControlledInput
-                title="Gist ID"
-                bind:value={input_settings.cloudsave_gist_id}
-            />
-            <ControlledInput
-                title="Gist Token"
-                type="password"
-                autocomplete="off"
-                bind:value={input_settings.cloudsave_gist_token}
-            />
-            <ControlledInput
-                title="Filename"
-                bind:value={input_settings.cloudsave_filename}
-            />
+        <div class="relative z-0 flex flex-col gap-2">
+            {#if modal_ref}
+                <ControlledInput
+                    title="Gist ID"
+                    bind:value={input_settings.cloudsave_gist_id}
+                />
+                <ControlledInput
+                    title="Gist Token"
+                    type="password"
+                    autocomplete="off"
+                    bind:value={input_settings.cloudsave_gist_token}
+                />
+                <ControlledInput
+                    title="Filename"
+                    bind:value={input_settings.cloudsave_filename}
+                />
+            {/if}
 
             <div class="mt-2 flex items-center space-x-2">
                 <Switch
@@ -96,26 +101,11 @@
                         variant="ghost"
                         onclick={revert_changes}
                         size="sm"
-                        class="h-6"
+                        class="h-6 text-xs"
                     >
                         Revert Changes
                     </Button>
                 </div>
-                <!-- <Alert.Root
-                    variant="warning"
-                    class="flex h-[36px] items-center gap-3 py-1"
-                >
-                    <AlertCircleIcon />
-                    <span>You have unsaved changes.</span>
-                    <Button
-                        variant="ghost"
-                        onclick={revert_changes}
-                        size="sm"
-                        class="h-6"
-                    >
-                        Revert Changes
-                    </Button>
-                </Alert.Root> -->
             {/if}
             <Button
                 onclick={on_cancel}
