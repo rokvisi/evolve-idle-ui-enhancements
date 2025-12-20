@@ -1,4 +1,5 @@
 import { find_resource_by_data_attr } from '$src/data/resources';
+import { GLOBALS } from '$src/globals';
 import { ImgFactory } from '$src/ImgFactory';
 import { fmtNumber, highlight_item, remove_highlight_from_item, watch_element_dom_mutation } from '$src/utils';
 
@@ -18,9 +19,43 @@ class PopperManager {
 
     // Return a cleanup function to remove any modifications made.
     popper_handler(element: JQuery<HTMLElement>) {
+        //? 'data-id' attribute holds the id of the element being hovered.
+        const hovered_element_id = element.attr('data-id');
+        if (!hovered_element_id) return () => {};
+
+        // Hovering "Alien Gift" tech and Andromeda "Assault Mission" gives piracy increase warning.
+        if (['tech-xeno_gift', 'galaxy-alien2_mission', 'galaxy-embassy'].includes(hovered_element_id)) {
+            const will_start_piracy =
+                hovered_element_id === 'galaxy-embassy' &&
+                GLOBALS.GAME.global.galaxy.embassy &&
+                GLOBALS.GAME.global.galaxy.embassy.count === 0;
+
+            // Give no warning on embassy hover when piracy has already started.
+            //? Can't early return from this function.
+            //? Maybe invert this if statement to make it cleaner.
+
+            if (hovered_element_id === 'galaxy-embassy' && !will_start_piracy) {
+            } else {
+                const piracy_warning = $(`
+                <div style="padding: 2px 4px; margin-top: 4px; border-radius: 4px; background-color: oklch(20.5% 0 0); color: oklch(0.68 0.21 24.43);">
+                    <p style="text-align: center;">Warning:</p>
+                    <p style="text-align: center;">${will_start_piracy ? 'Starts Andromeda piracy!' : 'Increases Andromeda piracy!'}</p>
+                </div>
+            `);
+
+                let append_anchor = element.children().last();
+                if (append_anchor.hasClass('flair')) {
+                    append_anchor = append_anchor.prev();
+                }
+                append_anchor.append(piracy_warning);
+            }
+
+            // return () => {};
+        }
+
         // Hovering "Oil Powerplant" OR "Wind Farm"
         // If the element is the wind farm, add a "surplus-power" annotation to the popper.
-        if (element.attr('data-id') === 'city-oil_power') {
+        if (hovered_element_id === 'city-oil_power') {
             const oil_power_el = $('#city-oil_power');
 
             const building_name = oil_power_el.find('.aTitle').first().text().trim();
@@ -57,6 +92,8 @@ class PopperManager {
                     power_text_el.append(surplus_power_annotation);
                 }
             }
+
+            // return () => {};
         }
 
         // Find the cost list <div> or return early.

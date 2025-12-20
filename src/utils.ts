@@ -139,3 +139,11 @@ export function extract_css_property_at_rules_from_stylesheet(stylesheet: CSSSty
 
     return css_property_at_rules;
 }
+
+export function on_event<T = HTMLElement>(el: JQuery<T>, events: string, callback: () => void) {
+    el.on(events, callback);
+
+    return () => {
+        el.off(events, callback);
+    };
+}

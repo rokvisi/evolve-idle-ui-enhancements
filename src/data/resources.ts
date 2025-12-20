@@ -29,7 +29,7 @@ const all_resources = [
     'Chrysotile', //? Missing
     'Cipher', //? Missing
     'Coal',
-    'Codex', //? Missing
+    'Codex',
     'Containers',
     'Copper',
     'Corrupt_Gem',
@@ -70,7 +70,7 @@ const all_resources = [
     'Plywood',
     'Polymer',
     'Quantium', //? Missing
-    'Scarletite', //? Missing
+    'Scarletite',
     'Sheet_Metal',
     'Slave', //? Missing
     'Soul_Gem',
