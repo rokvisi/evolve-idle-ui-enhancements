@@ -18,11 +18,11 @@ const all_resources = [
     'Alloy',
     'Aluminium',
     'AntiPlasmid',
-    'Artifact', //? Missing
+    'Artifact',
     'Asphodel_Powder', //? Missing
     'Authority',
     'Blessed_Essence', //? Missing
-    'Blood_Stone', //? Missing
+    'Blood_Stone',
     'Bolognium',
     'Brick',
     'Cement',
