@@ -9,6 +9,10 @@ export function fmtNumber(num: number): string {
     return num_formatter.format(num);
 }
 
+export function capitalize(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export async function copyToClipboard(text: string) {
     await navigator.clipboard.writeText(text);
 }

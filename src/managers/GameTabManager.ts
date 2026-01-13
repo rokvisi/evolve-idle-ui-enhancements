@@ -15,6 +15,7 @@ import {
     remove_highlight_from_item,
     add_resource_img,
     on_event,
+    capitalize,
 } from '$src/utils';
 
 class GameTabManager {
@@ -198,26 +199,30 @@ class GameTabManager {
     }
 
     delegate_sub_tab_event() {
-        const main_tab = this.#selected_main_tab;
-        const sub_tab = this.#selected_sub_tab;
-
-        // Resources tab
-        if (main_tab === 'Resources') {
-            if (sub_tab === 'Market') {
-                this.on_event_resources_market();
-            }
-            if (sub_tab === 'Storage') {
-                this.on_event_resources_storage();
-            }
-            if (sub_tab === 'Mass Ejector') {
-                this.on_event_resources_mass_ejector();
+        // Civilization Tabs
+        if (this.#selected_main_tab === 'Civilization') {
+            if (this.#selected_sub_tab === 'Andromeda') {
+                this.on_event_civilization_andromeda();
             }
         }
 
-        // Andromeda Tab
-        if (main_tab === 'Civilization') {
-            if (sub_tab === 'Andromeda') {
-                this.on_event_civilization_andromeda();
+        // Civics Tabs
+        if (this.#selected_main_tab === 'Civics') {
+            if (this.#selected_sub_tab === 'Mech Lab') {
+                this.on_event_civics_mech_lab();
+            }
+        }
+
+        // Resources tabs
+        if (this.#selected_main_tab === 'Resources') {
+            if (this.#selected_sub_tab === 'Market') {
+                this.on_event_resources_market();
+            }
+            if (this.#selected_sub_tab === 'Storage') {
+                this.on_event_resources_storage();
+            }
+            if (this.#selected_sub_tab === 'Mass Ejector') {
+                this.on_event_resources_mass_ejector();
             }
         }
     }
@@ -708,6 +713,399 @@ class GameTabManager {
         this.set_tab_specific_cleanup_function(() => {
             cleanup();
             console.log('left andromeda');
+        });
+    }
+
+    // --- Civics tab handlers ---
+    on_event_civics_mech_lab() {
+        const cleanup_fns: (() => void)[] = [];
+        const cleanup = () => {
+            cleanup_fns.forEach((cleanup) => cleanup());
+            cleanup_fns.length = 0;
+        };
+
+        console.log('SPECIFIC HANDLER: Mech Lab');
+
+        // Sand
+        // The majority of the terrain is sandy.
+        // Wheel mech effectiveness: S 90%, L 85%
+        // Tread mech effectiveness: S 115%, L 110%
+        // Biped mech effectiveness: S 78%, L 65%
+        // Quad mech effectiveness: S 86%, L 75%
+        // Spider mech effectiveness: S 75%, L 65%
+        // Hover mech effectiveness: S 100%, L 100%
+
+        // Swamp
+        // Swamp land covers most of the terrain.
+        // Wheel mech effectiveness: S 35%, L 18%
+        // Tread mech effectiveness: S 55%, L 40%
+        // Biped mech effectiveness: S 68%, L 50%
+        // Quad mech effectiveness: S 58%, L 42%
+        // Spider mech effectiveness: S 90%, L 78%
+        // Hover mech effectiveness: S 135%, L 120%
+
+        //         Forest
+        // Trees grow everywhere across the landscape.
+        // Wheel mech effectiveness: S 100%, L 100%
+        // Tread mech effectiveness: S 100%, L 95%
+        // Biped mech effectiveness: S 100%, L 95%
+        // Quad mech effectiveness: S 125%, L 120%
+        // Spider mech effectiveness: S 82%, L 75%
+        // Hover mech effectiveness: S 65%, L 48%
+
+        //         Jungle
+        // Thick jungle-like plant life grows everywhere.
+        // Wheel mech effectiveness: S 92%, L 85%
+        // Tread mech effectiveness: S 95%, L 90%
+        // Biped mech effectiveness: S 82%, L 70%
+        // Quad mech effectiveness: S 100%, L 100%
+        // Spider mech effectiveness: S 77%, L 65%
+        // Hover mech effectiveness: S 55%, L 35%
+
+        //         Rocky
+        // Rocky terrain covers the entire landscape.
+        // Wheel mech effectiveness: S 65%, L 50%
+        // Tread mech effectiveness: S 65%, L 50%
+        // Biped mech effectiveness: S 48%, L 40%
+        // Quad mech effectiveness: S 95%, L 90%
+        // Spider mech effectiveness: S 125%, L 120%
+        // Hover mech effectiveness: S 82%, L 68%
+
+        //         Gravel
+        // A gravel-like surface covers the terrain.
+        // Wheel mech effectiveness: S 100%, L 95%
+        // Tread mech effectiveness: S 130%, L 120%
+        // Biped mech effectiveness: S 100%, L 100%
+        // Quad mech effectiveness: S 90%, L 80%
+        // Spider mech effectiveness: S 86%, L 75%
+        // Hover mech effectiveness: S 100%, L 100%
+
+        // Muddy
+        // The whole landscape is covered in mud that's up to a meter deep in places.
+        // Wheel mech effectiveness: S 85%, L 58%
+        // Tread mech effectiveness: S 88%, L 72%
+        // Biped mech effectiveness: S 85%, L 70%
+        // Quad mech effectiveness: S 68%, L 50%
+        // Spider mech effectiveness: S 92%, L 82%
+        // Hover mech effectiveness: S 115%, L 108%
+
+        //         Grass
+        // A nice grassy surface covers the land.
+        // Wheel mech effectiveness: S 130%, L 120%
+        // Tread mech effectiveness: S 100%, L 100%
+        // Biped mech effectiveness: S 125%, L 120%
+        // Quad mech effectiveness: S 100%, L 95%
+        // Spider mech effectiveness: S 100%, L 100%
+        // Hover mech effectiveness: S 100%, L 100%
+
+        //         Brush
+        // Thick underbrush covers the land.
+        // Wheel mech effectiveness: S 90%, L 80%
+        // Tread mech effectiveness: S 100%, L 100%
+        // Biped mech effectiveness: S 92%, L 85%
+        // Quad mech effectiveness: S 95%, L 90%
+        // Spider mech effectiveness: S 100%, L 95%
+        // Hover mech effectiveness: S 78%, L 70%
+
+        // Concrete
+        // The entire landscape is just a flat, open area paved in concrete.
+        // Wheel mech effectiveness: S 110%, L 100%
+        // Tread mech effectiveness: S 100%, L 100%
+        // Biped mech effectiveness: S 100%, L 100%
+        // Quad mech effectiveness: S 100%, L 100%
+        // Spider mech effectiveness: S 100%, L 100%
+        // Hover mech effectiveness: S 100%, L 100%
+
+        const terrain_mech_movement_effectiveness = {
+            sand: {
+                wheel: {
+                    s: 90,
+                    l: 85,
+                },
+                biped: {
+                    s: 78,
+                    l: 65,
+                },
+                spider: {
+                    s: 75,
+                    l: 65,
+                },
+                tread: {
+                    s: 115,
+                    l: 110,
+                },
+                quad: {
+                    s: 86,
+                    l: 75,
+                },
+                hover: {
+                    s: 100,
+                    l: 100,
+                },
+            },
+            swamp: {
+                wheel: {
+                    s: 35,
+                    l: 18,
+                },
+                biped: {
+                    s: 68,
+                    l: 50,
+                },
+                spider: {
+                    s: 90,
+                    l: 78,
+                },
+                tread: {
+                    s: 55,
+                    l: 40,
+                },
+                quad: {
+                    s: 58,
+                    l: 42,
+                },
+                hover: {
+                    s: 135,
+                    l: 120,
+                },
+            },
+            forest: {
+                wheel: {
+                    s: 100,
+                    l: 100,
+                },
+                biped: {
+                    s: 100,
+                    l: 95,
+                },
+                spider: {
+                    s: 82,
+                    l: 75,
+                },
+                tread: {
+                    s: 100,
+                    l: 95,
+                },
+                quad: {
+                    s: 125,
+                    l: 120,
+                },
+                hover: {
+                    s: 65,
+                    l: 48,
+                },
+            },
+            jungle: {
+                wheel: {
+                    s: 92,
+                    l: 85,
+                },
+                biped: {
+                    s: 82,
+                    l: 70,
+                },
+                spider: {
+                    s: 77,
+                    l: 65,
+                },
+                tread: {
+                    s: 95,
+                    l: 90,
+                },
+                quad: {
+                    s: 100,
+                    l: 100,
+                },
+                hover: {
+                    s: 55,
+                    l: 35,
+                },
+            },
+            rocky: {
+                wheel: {
+                    s: 65,
+                    l: 50,
+                },
+                biped: {
+                    s: 48,
+                    l: 40,
+                },
+                spider: {
+                    s: 125,
+                    l: 120,
+                },
+                tread: {
+                    s: 65,
+                    l: 50,
+                },
+                quad: {
+                    s: 95,
+                    l: 90,
+                },
+                hover: {
+                    s: 82,
+                    l: 68,
+                },
+            },
+            gravel: {
+                wheel: {
+                    s: 100,
+                    l: 95,
+                },
+                biped: {
+                    s: 100,
+                    l: 100,
+                },
+                spider: {
+                    s: 86,
+                    l: 75,
+                },
+                tread: {
+                    s: 130,
+                    l: 120,
+                },
+                quad: {
+                    s: 90,
+                    l: 80,
+                },
+                hover: {
+                    s: 100,
+                    l: 100,
+                },
+            },
+            muddy: {
+                wheel: {
+                    s: 85,
+                    l: 58,
+                },
+                biped: {
+                    s: 85,
+                    l: 70,
+                },
+                spider: {
+                    s: 92,
+                    l: 82,
+                },
+                tread: {
+                    s: 88,
+                    l: 72,
+                },
+                quad: {
+                    s: 68,
+                    l: 50,
+                },
+                hover: {
+                    s: 115,
+                    l: 108,
+                },
+            },
+            grass: {
+                wheel: {
+                    s: 130,
+                    l: 120,
+                },
+                biped: {
+                    s: 125,
+                    l: 120,
+                },
+                spider: {
+                    s: 100,
+                    l: 100,
+                },
+                tread: {
+                    s: 100,
+                    l: 100,
+                },
+                quad: {
+                    s: 100,
+                    l: 95,
+                },
+                hover: {
+                    s: 100,
+                    l: 100,
+                },
+            },
+            brush: {
+                wheel: {
+                    s: 90,
+                    l: 80,
+                },
+                biped: {
+                    s: 92,
+                    l: 85,
+                },
+                spider: {
+                    s: 100,
+                    l: 95,
+                },
+                tread: {
+                    s: 100,
+                    l: 100,
+                },
+                quad: {
+                    s: 95,
+                    l: 90,
+                },
+                hover: {
+                    s: 78,
+                    l: 70,
+                },
+            },
+            concrete: {
+                wheel: {
+                    s: 110,
+                    l: 100,
+                },
+                biped: {
+                    s: 100,
+                    l: 100,
+                },
+                spider: {
+                    s: 100,
+                    l: 100,
+                },
+                tread: {
+                    s: 100,
+                    l: 100,
+                },
+                quad: {
+                    s: 100,
+                    l: 100,
+                },
+                hover: {
+                    s: 100,
+                    l: 100,
+                },
+            },
+        } as const;
+
+        const current_biome_type = GLOBALS.GAME.global.portal.spire
+            .type as keyof typeof terrain_mech_movement_effectiveness;
+        const current_biome = terrain_mech_movement_effectiveness[current_biome_type];
+
+        const biome_info_el = $(`
+            <div style="border: .0625rem solid; padding: .25rem .5rem; max-width: 50rem;">
+                <p style="margin-bottom: 16px;" class="has-text-caution">${capitalize(current_biome_type)}</p>
+            </div>
+        `);
+        const biome_table_el = $(`
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+            </div>
+        `);
+        for (const mech_type of Object.keys(current_biome) as (keyof typeof current_biome)[]) {
+            const biome = current_biome[mech_type];
+
+            biome_table_el.append(
+                `<p style="margin-bottom: 8px;"><span class="has-text-warning">${capitalize(mech_type)}</span> mech effectiveness: <span class="has-text-info">S</span> <span class="${biome.s < 100 ? 'has-text-danger' : 'has-text-success'}">${biome.s}%</span>, <span class="has-text-info">L</span> <span class="${biome.l < 100 ? 'has-text-danger' : 'has-text-success'}">${biome.l}%</span></p>`
+            );
+        }
+
+        biome_info_el.append(biome_table_el);
+        $('#mechLab').append(biome_info_el);
+
+        this.set_tab_specific_cleanup_function(() => {
+            cleanup();
+            console.log('left mech lab');
         });
     }
 }
