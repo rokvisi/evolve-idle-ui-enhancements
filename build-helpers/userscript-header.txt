@@ -2,7 +2,6 @@
 // @name        Evolve UI Enhancements
 // @namespace   EvolveIdle
 // @match       https://pmotschmann.github.io/Evolve/
-// @grant       none
 // @version     1.0
 // @author      rokvisi
 // @description 11/03/2025, 16:42:55
