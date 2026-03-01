@@ -4,7 +4,7 @@ import { GLOBALS, init_globals } from '$src/globals';
 import { Toaster } from 'svelte-sonner';
 import { toast } from 'svelte-sonner';
 import { mount } from 'svelte';
-import { game_tab_manager } from '$src/managers/GameTabManager';
+import { game_tab_manager } from '$src/managers/tabs/GameTabManager';
 import { resource_column_manager } from '$src/managers/ResourceColumnManager';
 import { message_log_manager } from '$src/managers/MessageLogManager';
 import { popper_manager } from '$src/managers/PopperManager';

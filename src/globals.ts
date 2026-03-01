@@ -9,6 +9,7 @@ type GlobalsType = {
     SPECIES: any | undefined;
     PLANET_TRAITS: any[] | undefined;
     UNIVERSE: Universe | undefined;
+    LOC: (key: string) => string;
 };
 
 // Improve the structure (group colors, etc.)
@@ -21,6 +22,7 @@ export const GLOBALS: GlobalsType = {
     SPECIES: undefined,
     PLANET_TRAITS: undefined,
     UNIVERSE: undefined,
+    LOC: (key: string) => key,
 };
 
 export function init_globals(game: Record<string, any>) {
@@ -32,4 +34,5 @@ export function init_globals(game: Record<string, any>) {
     GLOBALS.PLANET = game.global.city.biome;
     GLOBALS.PLANET_TRAITS = game.global.city.ptrait;
     GLOBALS.UNIVERSE = game.global.race.universe;
+    GLOBALS.LOC = (key: string) => game.loc(key);
 }
